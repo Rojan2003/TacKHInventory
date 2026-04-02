@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TacKH Inventory and Distribution Reports</title>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<style>
+/* General body */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f6f8;
+  margin: 0;
+  padding: 2rem;
+  color: #333;
+  text-align: center;
+}
+
+/* Header */
+h1 {
+  color: #111E6C;
+  font-size: 2.2rem;
+  margin-bottom: 1rem;
+}
+
+/* Controls (dropdown + month picker) */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+select, input[type="month"] {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+select:hover, input[type="month"]:hover { border-color: #888; }
+
+/* Legend */
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.legend div {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+.legend .inventory-legend { color: #1976d2; }
+.legend .distribution-legend { color: #388e3c; }
+
+/* Cards container */
+.report-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  justify-items: center;
+  margin-top: 1rem;
+}
+
+/* Individual card */
+.report-card {
+  border-radius: 15px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 280px;
+  text-align: left;
+  position: relative;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.report-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+}
+
+/* Card types */
+.report-card.inventory { background: #e3f2fd; }
+.report-card.distribution { background: #e8f5e9; }
+
+/* Label */
+.label {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.8rem;
+  color: #fff;
+}
+.label-inventory { background: #1976d2; }
+.label-distribution { background: #388e3c; }
+
+/* Card content */
+.card-header { font-weight: 600; color: #111; margin-bottom: 0.6rem; }
+.card-body p { margin: 0.3rem 0; color: #555; font-size: 0.95rem; }
+
+/* Loading / error / no-data */
+.loading, .error, .no-data { font-weight: bold; margin-top: 1rem; color: #555; }
+
+/* Mobile */
+@media(max-width:480px){
+  h1{ font-size:1.8rem; }
+  select,input[type="month"]{ width: 100%; }
+  .report-card{ max-width: 90%; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>TacKH Inventory and Distribution Reports</h1>
+
+  <!-- Controls -->
+  <div class="controls">
+    <select v-model="selectedCongregation" @change="fetchReport">
+      <option value="" disabled>Select Congregation</option>
+      <option value="East">East</option>
+      <option value="West">West</option>
+      <option value="Central">Central</option>
+      <option value="SLC">SLC</option>
+      <option value="Tagalog">Tagalog</option>
+    </select>
+
+    <input type="month" v-model="selectedMonth" @change="fetchReport">
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="inventory-legend">🟦 Inventory</div>
+    <div class="distribution-legend">🟩 Distribution</div>
+  </div>
+
+  <!-- Status -->
+  <div v-if="loading" class="loading">Loading report...</div>
+  <div v-else-if="error" class="error">{{ error }}</div>
+  <div v-else-if="reportData.length === 0" class="no-data">No data for this month</div>
+
+  <!-- Report Cards -->
+  <div class="report-cards" v-else>
+    <div 
+      class="report-card" 
+      v-for="item in reportData" 
+      :key="item['Literature Code']"
+      :class="selectedCongregation==='East' ? 'inventory' : 'distribution'"
+    >
+      <div class="label" :class="selectedCongregation==='East' ? 'label-inventory' : 'label-distribution'">
+        {{ selectedCongregation==='East' ? 'Inventory' : 'Distribution' }}
+      </div>
+      <div class="card-header">{{ item['Literature Name'] }} ({{ item['Literature Code'] }})</div>
+      <div class="card-body">
+        <p>Total: {{ item['Total'] }}</p>
+        <p>Date: {{ formatDate(item['Date']) }}</p>
+        <p v-if="item['Congregation'] && selectedCongregation!=='East'">Congregation: {{ item['Congregation'] }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const { createApp } = Vue;
+createApp({
+  data() {
+    return {
+      selectedMonth: '',
+      selectedCongregation: '',
+      reportData: [],
+      loading: false,
+      error: null
+    }
+  },
+  methods: {
+    async fetchReport() {
+      if (!this.selectedMonth || !this.selectedCongregation) return;
+      this.loading = true;
+      this.error = null;
+      try {
+        const url = `https://script.google.com/macros/s/AKfycbzO3FEM3m7nDKgFIKafPRtLji92uh4KV2khpTW_WGzicUMI6_2UYhJ9nsGBfuemp8Rp/exec?month=${this.selectedMonth}&congregation=${this.selectedCongregation}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Failed to fetch report");
+        this.reportData = await response.json();
+      } catch(err) {
+        this.error = err.message;
+        this.reportData = [];
+      } finally {
+        this.loading = false;
+      }
+    },
+    formatDate(dateStr) {
+      return new Date(dateStr).toISOString().split('T')[0];
+    }
+  }
+}).mount('#app');
+</script>
+</body>
+</html>
