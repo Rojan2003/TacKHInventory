@@ -9,7 +9,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-
 /* GLOBAL */
 body {
   margin: 0;
@@ -24,10 +23,10 @@ body {
 
 /* SIDEBAR */
 .sidebar {
-  width: 220px;
+  width: 160px;
   background: #111827;
   color: white;
-  padding: 1.5rem;
+  padding: 1rem;
 }
 
 /* MAIN */
@@ -166,6 +165,50 @@ td:last-child {
   animation: spin 1s linear infinite;
 }
 
+/* ================= CARDS ================= */
+.report-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.report-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 12px;
+  border-left: 5px solid #1976d2;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  transition: 0.2s;
+}
+
+.report-card:hover {
+  transform: translateY(-3px);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.col { flex: 1; }
+
+.code {
+  font-weight: bold;
+  color: #555;
+}
+
+.name {
+  flex: 2;
+}
+
+.total {
+  text-align: right;
+  font-weight: bold;
+  color: #1976d2;
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
@@ -211,6 +254,8 @@ td:last-child {
 
       <input type="month" v-model="selectedMonth" @change="fetchReport">
 
+      <input type="text" v-model="searchQuery" placeholder="Search literature...">
+
       <button @click="toggleView">
         {{ viewMode === 'cards' ? 'Table' : 'Cards' }}
       </button>
@@ -219,8 +264,8 @@ td:last-child {
     </div>
 
     <!-- SUMMARY -->
-    <div class="summary" v-if="reportData.length">
-      <div class="summary-card">Total Records: {{ reportData.length }}</div>
+    <div class="summary" v-if="filteredData.length">
+      <div class="summary-card">Total Records: {{ filteredData.length }}</div>
       <div class="summary-card">Total Quantity: {{ totalQuantity }}</div>
     </div>
 
@@ -228,12 +273,30 @@ td:last-child {
     <div v-if="loading" class="spinner"></div>
 
     <!-- CHART -->
-    <div v-if="!loading && reportData.length" class="chart-container">
+    <div v-if="!loading && filteredData.length" class="chart-container">
       <canvas id="chart"></canvas>
     </div>
 
+    <div v-if="!loading && filteredData.length > 20" style="text-align:center; font-size:12px; color:#777; margin-top:5px;">
+      Showing top {{ itemsPerPage }} of {{ filteredData.length }} literature
+    </div>
+    
+    <!-- CARDS -->
+    <div v-if="!loading && viewMode === 'cards' && filteredData.length" class="report-cards">
+      <div v-for="item in paginatedData" class="report-card">
+        <div class="row">
+          <div class="col code">{{ item['Literature Code'] }}</div>
+          <div class="col name">{{ item['Literature Name'] }}</div>
+          <div class="col total">{{ item['Total'] }}</div>
+        </div>
+        <div v-if="isDistribution" style="margin-top:8px; font-size:12px; color:#777;">
+          📅 {{ formatDate(item['Date']) }}
+        </div>
+      </div>
+    </div>
+
     <!-- TABLE -->
-    <table v-if="!loading && viewMode === 'table' && reportData.length">
+    <table v-if="!loading && viewMode === 'table' && filteredData.length">
       <thead>
         <tr>
           <th>Code</th>
@@ -243,7 +306,7 @@ td:last-child {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="item in reportData">
+        <tr v-for="item in paginatedData">
           <td>{{ item['Literature Code'] }}</td>
           <td>{{ item['Literature Name'] }}</td>
           <td>{{ item['Total'] }}</td>
@@ -251,6 +314,13 @@ td:last-child {
         </tr>
       </tbody>
     </table>
+
+    <!-- PAGINATION -->
+    <div v-if="totalPages > 1" style="text-align:center; margin-top:10px;">
+      <button :disabled="currentPage===1" @click="prevPage">Prev</button>
+      Page {{currentPage}} of {{totalPages}}
+      <button :disabled="currentPage===totalPages" @click="nextPage">Next</button>
+    </div>
 
   </div>
 </div>
@@ -269,14 +339,37 @@ createApp({
       reportData: [],
       viewMode: 'table',
       chart: null,
-      loading: false
+      loading: false,
+      searchQuery: '',
+      currentPage: 1,
+      itemsPerPage: 10,
     }
   },
 
   computed: {
-    totalQuantity() {
-      return this.reportData.reduce((sum, i) => sum + Number(i['Total'] || 0), 0);
+    filteredData() {
+      if (!this.searchQuery) return this.reportData;
+      const query = this.searchQuery.toLowerCase();
+      return this.reportData.filter(i =>
+        (i['Literature Code'] || '').toLowerCase().includes(query) ||
+        (i['Literature Name'] || '').toLowerCase().includes(query)
+      );
     },
+
+    paginatedData() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.filteredData.slice(start, end);
+    },
+
+    totalPages() {
+      return Math.ceil(this.filteredData.length / this.itemsPerPage);
+    },
+
+    totalQuantity() {
+      return this.filteredData.reduce((sum, i) => sum + Number(i['Total'] || 0), 0);
+    },
+
     isDistribution() {
       return this.selectedCongregation !== 'East';
     }
@@ -284,13 +377,16 @@ createApp({
 
   methods: {
     login() {
-      if (this.password === "congregation_123") {
+      if (this.password.trim() === "congregation_123") {
         this.authenticated = true;
+      } else {
+        alert('Wrong password');
       }
     },
 
     logout() {
       this.authenticated = false;
+      this.password = '';
     },
 
     toggleView() {
@@ -298,45 +394,44 @@ createApp({
     },
 
     formatDate(date) {
-    if (!date) return '';
-    return date.split('T')[0];
+      if (!date) return '';
+      return date.split('T')[0];
     },
 
     async fetchReport() {
       if (!this.selectedMonth || !this.selectedCongregation) return;
 
       this.loading = true;
+      this.currentPage = 1;
 
       const url = `https://script.google.com/macros/s/AKfycbzO3FEM3m7nDKgFIKafPRtLji92uh4KV2khpTW_WGzicUMI6_2UYhJ9nsGBfuemp8Rp/exec?month=${this.selectedMonth}&congregation=${this.selectedCongregation}`;
+      
+      try {
+        const res = await fetch(url);
+        const rawData = await res.json();
 
-      const res = await fetch(url);
-      const rawData = await res.json();
+        if (this.selectedCongregation === "East") {
+          const grouped = {};
+          rawData.forEach(item => {
+            const code = item['Literature Code'];
+            if (!grouped[code]) {
+              grouped[code] = { ...item };
+            } else {
+              grouped[code]['Total'] =
+                Number(grouped[code]['Total']) + Number(item['Total']);
+            }
+          });
+          this.reportData = Object.values(grouped);
+        } else {
+          this.reportData = rawData;
+        }
 
-      if (this.selectedCongregation === "East") {
-        // INVENTORY (group totals)
-        const grouped = {};
-
-        rawData.forEach(item => {
-          const code = item['Literature Code'];
-
-          if (!grouped[code]) {
-            grouped[code] = { ...item };
-          } else {
-            grouped[code]['Total'] =
-              Number(grouped[code]['Total']) + Number(item['Total']);
-          }
-        });
-
-        this.reportData = Object.values(grouped);
-
-      } else {
-        // DISTRIBUTION (raw with dates)
-        this.reportData = rawData;
+      } catch (err) {
+        console.error('Error fetching report:', err);
+      } finally {
+        this.loading = false;
+        this.$nextTick(() => this.renderChart());
       }
-
-      this.loading = false;
-
-      this.$nextTick(() => this.renderChart());
     },
 
     renderChart() {
@@ -363,16 +458,22 @@ createApp({
 
     exportCSV() {
       let csv = "Code,Name,Total,Date\n";
-
       this.reportData.forEach(i => {
         csv += `${i['Literature Code']},${i['Literature Name']},${i['Total']},${i['Date'] || ''}\n`;
       });
-
       const blob = new Blob([csv]);
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = 'report.csv';
       a.click();
+    },
+
+    prevPage() {
+      if (this.currentPage > 1) this.currentPage--;
+    },
+
+    nextPage() {
+      if (this.currentPage < this.totalPages) this.currentPage++;
     }
   }
 
