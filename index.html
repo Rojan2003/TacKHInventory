@@ -10,13 +10,13 @@
 
 <style>
 
-/* 🌈 GLOBAL */
+/* GLOBAL */
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
 }
 
-/* 🌟 LAYOUT */
+/* LAYOUT */
 .layout {
   display: flex;
   min-height: 100vh;
@@ -94,43 +94,6 @@ select, input, button {
   border-radius: 12px;
 }
 
-/* ROW */
-.row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.col { flex: 1; }
-
-.code {
-  font-weight: bold;
-  color: #555;
-}
-
-.name { flex: 2; }
-
-.total {
-  text-align: right;
-  font-weight: bold;
-  color: #1976d2;
-}
-
-/* CARDS */
-.report-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.report-card {
-  background: white;
-  padding: 1rem;
-  border-radius: 10px;
-  border-left: 5px solid #1976d2;
-}
-
 /* TABLE */
 table {
   width: 100%;
@@ -154,7 +117,7 @@ td:last-child {
   color: #1976d2;
 }
 
-/* 🔥 MODERN LOGIN */
+/* LOGIN */
 .login-container {
   height: 100vh;
   display: flex;
@@ -171,21 +134,14 @@ td:last-child {
   width: 320px;
   text-align: center;
   color: white;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
 }
 
-.login-card h2 {
-  margin-bottom: 1.5rem;
-}
-
-/* INPUT */
 .login-card input {
   width: 100%;
   padding: 0.7rem;
   border-radius: 10px;
   border: none;
   margin-bottom: 1rem;
-  outline: none;
 }
 
 /* BUTTON */
@@ -197,12 +153,21 @@ td:last-child {
   background: #4f46e5;
   color: white;
   cursor: pointer;
-  transition: 0.3s;
 }
 
-.login-card button:hover {
-  background: #6366f1;
-  transform: translateY(-2px);
+/* 🔄 SPINNER */
+.spinner {
+  margin: 20px auto;
+  width: 40px;
+  height: 40px;
+  border: 5px solid #ccc;
+  border-top: 5px solid #1976d2;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 </style>
@@ -253,35 +218,28 @@ td:last-child {
       <button @click="exportCSV">Export</button>
     </div>
 
+    <!-- SUMMARY -->
     <div class="summary" v-if="reportData.length">
-      <div class="summary-card">
-        Total Records: {{ reportData.length }}
-      </div>
-      <div class="summary-card">
-        Total Quantity: {{ totalQuantity }}
-      </div>
+      <div class="summary-card">Total Records: {{ reportData.length }}</div>
+      <div class="summary-card">Total Quantity: {{ totalQuantity }}</div>
     </div>
 
-    <div class="chart-container">
+    <!-- LOADING -->
+    <div v-if="loading" class="spinner"></div>
+
+    <!-- CHART -->
+    <div v-if="!loading && reportData.length" class="chart-container">
       <canvas id="chart"></canvas>
     </div>
 
-    <div v-if="viewMode === 'cards'" class="report-cards">
-      <div v-for="item in reportData" class="report-card">
-        <div class="row">
-          <div class="col code">{{ item['Literature Code'] }}</div>
-          <div class="col name">{{ item['Literature Name'] }}</div>
-          <div class="col total">{{ item['Total'] }}</div>
-        </div>
-      </div>
-    </div>
-
-    <table v-if="viewMode === 'table'">
+    <!-- TABLE -->
+    <table v-if="!loading && viewMode === 'table' && reportData.length">
       <thead>
         <tr>
           <th>Code</th>
           <th>Name</th>
           <th>Total</th>
+          <th v-if="isDistribution">Date Distributed</th>
         </tr>
       </thead>
       <tbody>
@@ -289,6 +247,7 @@ td:last-child {
           <td>{{ item['Literature Code'] }}</td>
           <td>{{ item['Literature Name'] }}</td>
           <td>{{ item['Total'] }}</td>
+          <td v-if="isDistribution">{{ formatDate(item['Date']) }}</td>
         </tr>
       </tbody>
     </table>
@@ -305,18 +264,21 @@ createApp({
     return {
       authenticated: false,
       password: '',
-
       selectedMonth: '',
       selectedCongregation: '',
       reportData: [],
-      viewMode: 'cards',
-      chart: null
+      viewMode: 'table',
+      chart: null,
+      loading: false
     }
   },
 
   computed: {
     totalQuantity() {
       return this.reportData.reduce((sum, i) => sum + Number(i['Total'] || 0), 0);
+    },
+    isDistribution() {
+      return this.selectedCongregation !== 'East';
     }
   },
 
@@ -335,19 +297,51 @@ createApp({
       this.viewMode = this.viewMode === 'cards' ? 'table' : 'cards';
     },
 
+    formatDate(date) {
+    if (!date) return '';
+    return date.split('T')[0];
+    },
+
     async fetchReport() {
       if (!this.selectedMonth || !this.selectedCongregation) return;
+
+      this.loading = true;
 
       const url = `https://script.google.com/macros/s/AKfycbzO3FEM3m7nDKgFIKafPRtLji92uh4KV2khpTW_WGzicUMI6_2UYhJ9nsGBfuemp8Rp/exec?month=${this.selectedMonth}&congregation=${this.selectedCongregation}`;
 
       const res = await fetch(url);
-      this.reportData = await res.json();
+      const rawData = await res.json();
+
+      if (this.selectedCongregation === "East") {
+        // INVENTORY (group totals)
+        const grouped = {};
+
+        rawData.forEach(item => {
+          const code = item['Literature Code'];
+
+          if (!grouped[code]) {
+            grouped[code] = { ...item };
+          } else {
+            grouped[code]['Total'] =
+              Number(grouped[code]['Total']) + Number(item['Total']);
+          }
+        });
+
+        this.reportData = Object.values(grouped);
+
+      } else {
+        // DISTRIBUTION (raw with dates)
+        this.reportData = rawData;
+      }
+
+      this.loading = false;
 
       this.$nextTick(() => this.renderChart());
     },
 
     renderChart() {
       const ctx = document.getElementById('chart');
+      if (!ctx) return;
 
       if (this.chart) this.chart.destroy();
 
@@ -368,10 +362,10 @@ createApp({
     },
 
     exportCSV() {
-      let csv = "Code,Name,Total\n";
+      let csv = "Code,Name,Total,Date\n";
 
       this.reportData.forEach(i => {
-        csv += `${i['Literature Code']},${i['Literature Name']},${i['Total']}\n`;
+        csv += `${i['Literature Code']},${i['Literature Name']},${i['Total']},${i['Date'] || ''}\n`;
       });
 
       const blob = new Blob([csv]);
