@@ -3,216 +3,87 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TacKH Reports</title>
-
+<title>TacKH Dashboard</title>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
 <style>
-/* GLOBAL */
-body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
+/* ===== COLOR PALETTE ===== */
+:root {
+  --sidebar-bg: #2C594A;
+  --main-bg: #E6F2EC;
+  --card-bg: #3A8570;
+  --accent: #9ADBC7;
+  --text-light: #E6F2EC;
+  --text-dark: #0C1412;
 }
 
-/* LAYOUT */
-.layout {
-  display: flex;
-  min-height: 100vh;
+/* ===== BODY ===== */
+body { margin:0; font-family:'Inter','Segoe UI',sans-serif; background: var(--main-bg); color: var(--text-dark); }
+
+/* ===== LAYOUT ===== */
+.layout { display:flex; min-height:100vh; }
+.sidebar { width:220px; padding:2rem 1rem; font-weight:600; font-size:18px; border-radius:12px; background: var(--sidebar-bg); color: var(--text-light); }
+.main { flex:1; padding:2rem; }
+
+/* ===== TOP BAR ===== */
+.top-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+.top-bar h1 { font-size:28px; font-weight:700; }
+.logout-btn { background:#ef4444; color:#fff; border:none; border-radius:12px; padding:0.6rem 1rem; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:5px; font-size:14px; }
+.logout-btn:hover { background:#dc2626; }
+
+/* ===== FILTER CARD ===== */
+.filter-card { display:flex; flex-wrap:wrap; gap:0.8rem; align-items:center; padding:1rem; border-radius:12px; margin-bottom:1.5rem; background: var(--card-bg); color: var(--text-light); box-shadow:0 2px 12px rgba(0,0,0,0.05);}
+.filter-card select, .filter-card input, .filter-card button { flex:1; padding:0.6rem 0.8rem; border-radius:10px; border:1px solid #2A7461; font-size:14px; cursor:pointer; }
+
+/* ===== SUMMARY ===== */
+.summary { display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; }
+.summary-card { flex:1; padding:1rem; border-radius:12px; text-align:center; font-weight:600; font-size:14px; background: var(--card-bg); color: var(--text-light); box-shadow:0 2px 12px rgba(0,0,0,0.05); }
+
+/* ===== TOP CARDS ===== */
+.top-cards { display:flex; gap:1rem; overflow-x:auto; margin-bottom:1.5rem; }
+.report-card { flex:0 0 150px; padding:1rem; border-radius:12px; text-align:center; font-weight:600; background: var(--card-bg); color: var(--text-light); box-shadow:0 2px 12px rgba(0,0,0,0.05); transition:0.2s; }
+.report-card:hover { transform:translateY(-3px); box-shadow:0 4px 16px rgba(0,0,0,0.12); }
+.report-card .code { font-size:14px; color: var(--accent); margin-bottom:0.3rem; }
+.report-card .name { font-size:16px; margin-bottom:0.5rem; color: var(--text-light); }
+.report-card .number { color: var(--accent); font-weight:700; font-size:16px; }
+
+/* ===== TABLE ===== */
+table { width:100%; border-radius:12px; overflow:hidden; border-collapse:collapse; margin-top:1rem; background: var(--card-bg); color: var(--text-light); }
+th, td { padding:12px; text-align:left; }
+th { font-weight:600; background: var(--sidebar-bg); }
+td { font-weight:500; }
+
+/* ===== LOGIN ===== */
+.login-container { height:100vh; display:flex; justify-content:center; align-items:center; }
+.login-card { width:320px; padding:2rem; border-radius:16px; text-align:center; background: var(--card-bg); color: var(--text-light); box-shadow:0 10px 30px rgba(0,0,0,0.15); }
+.login-card h2 { font-weight:700; margin-bottom:1.5rem; font-size:24px; }
+.login-card input { width:100%; padding:0.8rem; border-radius:12px; border:1px solid #2A7461; margin-bottom:1.2rem; font-size:16px; }
+.login-card button { width:100%; padding:0.8rem; border-radius:12px; border:none; background: var(--card-bg); color:#fff; font-weight:600; cursor:pointer; }
+.login-card button:hover { background:#2a7461; }
+
+/* ===== SPINNER OVERLAY ===== */
+.spinner-overlay {
+  position: fixed; top:0; left:0; width:100%; height:100%;
+  background: rgba(0,0,0,0.2); display:flex; justify-content:center; align-items:center; z-index:1000;
 }
+.spinner { width:50px; height:50px; border:6px solid #ccc; border-top:6px solid var(--accent); border-radius:50%; animation:spin 1s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
 
-/* SIDEBAR */
-.sidebar {
-  width: 160px;
-  background: #111827;
-  color: white;
-  padding: 1rem;
+/* ===== MOBILE ===== */
+@media(max-width:768px){
+  .layout{flex-direction:column;}
+  .sidebar{width:100%; margin-bottom:1rem;}
+  .main{padding:1rem;}
+  .filter-card{flex-direction:column;}
+  .filter-card select, .filter-card input, .filter-card button{width:100%;}
+  .summary{flex-direction:column;}
+  .top-cards{flex-wrap:nowrap; overflow-x:auto;}
+  table,thead,tbody,th,td,tr{display:block;}
+  thead tr{display:none;}
+  tbody tr{margin-bottom:1rem; border-radius:12px; padding:0.5rem; background: var(--card-bg);}
+  tbody td{display:flex; justify-content:space-between; padding:0.5rem;}
 }
-
-/* MAIN */
-.main {
-  flex: 1;
-  padding: 2rem;
-  background: #eef1f5;
-}
-
-/* TOP */
-.top-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.logout-btn {
-  background: #e53935;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-/* FILTER */
-.filter-card {
-  background: white;
-  padding: 1rem;
-  border-radius: 12px;
-  display: flex;
-  gap: 1rem;
-  margin: 1rem 0;
-  align-items: center;
-}
-
-select, input, button {
-  padding: 0.6rem;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-}
-
-/* SUMMARY */
-.summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px,1fr));
-  gap: 1rem;
-}
-
-.summary-card {
-  background: white;
-  padding: 1rem;
-  border-radius: 10px;
-}
-
-/* CHART */
-.chart-container {
-  width: 100%;
-  max-width: 500px;
-  height: 250px;
-  margin: 1rem auto;
-  background: #fff;
-  padding: 1rem;
-  border-radius: 12px;
-}
-
-/* TABLE */
-table {
-  width: 100%;
-  background: white;
-  border-collapse: collapse;
-  margin-top: 1rem;
-}
-
-th {
-  text-align: left;
-  background: #f9fafb;
-}
-
-th, td {
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-}
-
-td:last-child {
-  font-weight: bold;
-  color: #1976d2;
-}
-
-/* LOGIN */
-.login-container {
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(135deg, #1e3a8a, #0f172a);
-}
-
-.login-card {
-  background: rgba(255,255,255,0.1);
-  backdrop-filter: blur(15px);
-  padding: 2rem;
-  border-radius: 16px;
-  width: 320px;
-  text-align: center;
-  color: white;
-}
-
-.login-card input {
-  width: 100%;
-  padding: 0.7rem;
-  border-radius: 10px;
-  border: none;
-  margin-bottom: 1rem;
-}
-
-/* BUTTON */
-.login-card button {
-  width: 100%;
-  padding: 0.7rem;
-  border-radius: 10px;
-  border: none;
-  background: #4f46e5;
-  color: white;
-  cursor: pointer;
-}
-
-/* 🔄 SPINNER */
-.spinner {
-  margin: 20px auto;
-  width: 40px;
-  height: 40px;
-  border: 5px solid #ccc;
-  border-top: 5px solid #1976d2;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-/* ================= CARDS ================= */
-.report-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.report-card {
-  background: white;
-  padding: 1rem;
-  border-radius: 12px;
-  border-left: 5px solid #1976d2;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-  transition: 0.2s;
-}
-
-.report-card:hover {
-  transform: translateY(-3px);
-}
-
-.row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.col { flex: 1; }
-
-.code {
-  font-weight: bold;
-  color: #555;
-}
-
-.name {
-  flex: 2;
-}
-
-.total {
-  text-align: right;
-  font-weight: bold;
-  color: #1976d2;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
 </style>
 </head>
 
@@ -222,81 +93,52 @@ td:last-child {
 <!-- LOGIN -->
 <div v-if="!authenticated" class="login-container">
   <div class="login-card">
-    <h2>🔐 TacKH Access</h2>
+    <h2>🔒 TacKH Access</h2>
     <input type="password" v-model="password" placeholder="Enter password">
-    <button @click="login">Login</button>
+    <button @click="login"><i class="fas fa-lock"></i> Login</button>
   </div>
 </div>
 
-<!-- MAIN -->
+<!-- DASHBOARD -->
 <div v-if="authenticated" class="layout">
-
-  <div class="sidebar">
-    <h2>TacKH</h2>
-  </div>
-
+  <div class="sidebar">TacKH</div>
   <div class="main">
-
     <div class="top-bar">
       <h1>Reports</h1>
-      <button class="logout-btn" @click="logout">Logout</button>
+      <button class="logout-btn" @click="logout"><i class="fas fa-right-from-bracket"></i> Logout</button>
     </div>
 
+    <!-- FILTERS -->
     <div class="filter-card">
       <select v-model="selectedCongregation" @change="fetchReport">
         <option value="" disabled>Select Congregation</option>
-        <option>East</option>
-        <option>West</option>
-        <option>Central</option>
-        <option>Tagalog</option>
-        <option>SLC</option>
+        <option>East</option><option>West</option><option>Central</option><option>Tagalog</option><option>SLC</option>
       </select>
-
       <input type="month" v-model="selectedMonth" @change="fetchReport">
-
       <input type="text" v-model="searchQuery" placeholder="Search literature...">
-
-      <button @click="toggleView">
-        {{ viewMode === 'cards' ? 'Table' : 'Cards' }}
-      </button>
-
-      <button @click="exportCSV">Export</button>
+      <button @click="toggleView"><i class="fas fa-eye"></i> {{ viewMode==='cards'?'Table':'Cards' }}</button>
+      <button @click="exportCSV"><i class="fas fa-file-csv"></i> Export</button>
     </div>
 
     <!-- SUMMARY -->
-    <div class="summary" v-if="filteredData.length">
+    <div v-if="filteredData.length" class="summary">
       <div class="summary-card">Total Records: {{ filteredData.length }}</div>
       <div class="summary-card">Total Quantity: {{ totalQuantity }}</div>
+      <div class="summary-card">Average per Literature: {{ avgQuantity }}</div>
+      <div class="summary-card">Top Literature: {{ topLiteratureName }} ({{ topLiteratureTotal }})</div>
     </div>
 
-    <!-- LOADING -->
-    <div v-if="loading" class="spinner"></div>
-
-    <!-- CHART -->
-    <div v-if="!loading && filteredData.length" class="chart-container">
-      <canvas id="chart"></canvas>
-    </div>
-
-    <div v-if="!loading && filteredData.length > 20" style="text-align:center; font-size:12px; color:#777; margin-top:5px;">
-      Showing top {{ itemsPerPage }} of {{ filteredData.length }} literature
-    </div>
-    
-    <!-- CARDS -->
-    <div v-if="!loading && viewMode === 'cards' && filteredData.length" class="report-cards">
-      <div v-for="item in paginatedData" class="report-card">
-        <div class="row">
-          <div class="col code">{{ item['Literature Code'] }}</div>
-          <div class="col name">{{ item['Literature Name'] }}</div>
-          <div class="col total">{{ item['Total'] }}</div>
-        </div>
-        <div v-if="isDistribution" style="margin-top:8px; font-size:12px; color:#777;">
-          📅 {{ formatDate(item['Date']) }}
-        </div>
+    <!-- TOP 10 CARDS -->
+    <div v-if="filteredData.length" class="top-cards">
+      <div v-for="item in topNData" class="report-card">
+        <div class="code">{{ item['Literature Code'] }}</div>
+        <div class="name">{{ item['Literature Name'] }}</div>
+        <div class="number">{{ item.Total }}</div>
       </div>
     </div>
 
     <!-- TABLE -->
-    <table v-if="!loading && viewMode === 'table' && filteredData.length">
+    <table v-if="viewMode==='table' && filteredData.length">
       <thead>
         <tr>
           <th>Code</th>
@@ -309,176 +151,89 @@ td:last-child {
         <tr v-for="item in paginatedData">
           <td>{{ item['Literature Code'] }}</td>
           <td>{{ item['Literature Name'] }}</td>
-          <td>{{ item['Total'] }}</td>
+          <td class="number">{{ item.Total }}</td>
           <td v-if="isDistribution">{{ formatDate(item['Date']) }}</td>
         </tr>
       </tbody>
     </table>
-
-    <!-- PAGINATION -->
-    <div v-if="totalPages > 1" style="text-align:center; margin-top:10px;">
-      <button :disabled="currentPage===1" @click="prevPage">Prev</button>
-      Page {{currentPage}} of {{totalPages}}
-      <button :disabled="currentPage===totalPages" @click="nextPage">Next</button>
-    </div>
-
   </div>
 </div>
+
+<!-- SPINNER OVERLAY -->
+<div v-if="loading" class="spinner-overlay">
+  <div class="spinner"></div>
 </div>
 
 <script>
 const { createApp } = Vue;
-
 createApp({
   data() {
     return {
-      authenticated: false,
-      password: '',
-      selectedMonth: '',
-      selectedCongregation: '',
-      reportData: [],
-      viewMode: 'table',
-      chart: null,
-      loading: false,
-      searchQuery: '',
-      currentPage: 1,
-      itemsPerPage: 10,
+      authenticated:false,
+      password:'',
+      selectedMonth:'',
+      selectedCongregation:'',
+      reportData:[],
+      viewMode:'table',
+      loading:false,
+      searchQuery:'',
+      currentPage:1,
+      itemsPerPage:10
     }
   },
-
   computed: {
-    filteredData() {
-      if (!this.searchQuery) return this.reportData;
-      const query = this.searchQuery.toLowerCase();
-      return this.reportData.filter(i =>
-        (i['Literature Code'] || '').toLowerCase().includes(query) ||
-        (i['Literature Name'] || '').toLowerCase().includes(query)
-      );
+    filteredData() { 
+      const q=this.searchQuery.toLowerCase(); 
+      if(!this.searchQuery) return this.reportData; 
+      return this.reportData.filter(i=>(i['Literature Code']||'').toLowerCase().includes(q)||(i['Literature Name']||'').toLowerCase().includes(q)); 
     },
-
-    paginatedData() {
-      const start = (this.currentPage - 1) * this.itemsPerPage;
-      const end = start + this.itemsPerPage;
-      return this.filteredData.slice(start, end);
-    },
-
-    totalPages() {
-      return Math.ceil(this.filteredData.length / this.itemsPerPage);
-    },
-
-    totalQuantity() {
-      return this.filteredData.reduce((sum, i) => sum + Number(i['Total'] || 0), 0);
-    },
-
-    isDistribution() {
-      return this.selectedCongregation !== 'East';
-    }
+    paginatedData() { const start=(this.currentPage-1)*this.itemsPerPage; return this.filteredData.slice(start,start+this.itemsPerPage); },
+    totalPages() { return Math.ceil(this.filteredData.length/this.itemsPerPage); },
+    totalQuantity() { return this.filteredData.reduce((sum,i)=>sum+Number(i.Total||0),0); },
+    isDistribution() { return this.selectedCongregation!=='East'; },
+    topLiterature() { if(!this.filteredData.length) return {}; return this.filteredData.reduce((max,i)=>Number(i.Total)>(max.Total||0)?i:max,{}); },
+    topLiteratureName() { return this.topLiterature['Literature Name']||''; },
+    topLiteratureTotal() { return this.topLiterature['Total']||0; },
+    avgQuantity() { if(!this.filteredData.length) return 0; return (this.filteredData.reduce((sum,i)=>sum+Number(i.Total),0)/this.filteredData.length).toFixed(2); },
+    topNData() { return this.filteredData.sort((a,b)=>b.Total-a.Total).slice(0,10); },
+    maxTotal() { return Math.max(...this.filteredData.map(i=>Number(i.Total))); }
   },
-
   methods: {
-    login() {
-      if (this.password.trim() === "congregation_123") {
-        this.authenticated = true;
-      } else {
-        alert('Wrong password');
-      }
-    },
-
-    logout() {
-      this.authenticated = false;
-      this.password = '';
-    },
-
-    toggleView() {
-      this.viewMode = this.viewMode === 'cards' ? 'table' : 'cards';
-    },
-
-    formatDate(date) {
-      if (!date) return '';
-      return date.split('T')[0];
-    },
-
+    login() { if(this.password==='congregation_123') this.authenticated=true; else alert('Wrong password'); },
+    logout() { this.authenticated=false; this.password=''; },
+    toggleView() { this.viewMode=this.viewMode==='cards'?'table':'cards'; },
+    formatDate(d) { return d?d.split('T')[0]:''; },
     async fetchReport() {
-      if (!this.selectedMonth || !this.selectedCongregation) return;
-
-      this.loading = true;
-      this.currentPage = 1;
-
-      const url = `https://script.google.com/macros/s/AKfycbzO3FEM3m7nDKgFIKafPRtLji92uh4KV2khpTW_WGzicUMI6_2UYhJ9nsGBfuemp8Rp/exec?month=${this.selectedMonth}&congregation=${this.selectedCongregation}`;
-      
-      try {
-        const res = await fetch(url);
-        const rawData = await res.json();
-
-        if (this.selectedCongregation === "East") {
-          const grouped = {};
-          rawData.forEach(item => {
-            const code = item['Literature Code'];
-            if (!grouped[code]) {
-              grouped[code] = { ...item };
-            } else {
-              grouped[code]['Total'] =
-                Number(grouped[code]['Total']) + Number(item['Total']);
-            }
+      if(!this.selectedMonth||!this.selectedCongregation) return;
+      this.loading=true; this.currentPage=1;
+      const url=`https://script.google.com/macros/s/AKfycbzO3FEM3m7nDKgFIKafPRtLji92uh4KV2khpTW_WGzicUMI6_2UYhJ9nsGBfuemp8Rp/exec?month=${this.selectedMonth}&congregation=${this.selectedCongregation}`;
+      try{
+        const res=await fetch(url);
+        const rawData=await res.json();
+        if(this.selectedCongregation==='East'){
+          const grouped={};
+          rawData.forEach(item=>{
+            const code=item['Literature Code'];
+            if(!grouped[code]) grouped[code]={...item};
+            else grouped[code]['Total']+=Number(item['Total']);
           });
-          this.reportData = Object.values(grouped);
-        } else {
-          this.reportData = rawData;
-        }
-
-      } catch (err) {
-        console.error('Error fetching report:', err);
-      } finally {
-        this.loading = false;
-        this.$nextTick(() => this.renderChart());
-      }
+          this.reportData=Object.values(grouped);
+        } else this.reportData=rawData;
+      } catch(err){console.error(err);} finally{this.loading=false;}
     },
-
-    renderChart() {
-      const ctx = document.getElementById('chart');
-      if (!ctx) return;
-
-      if (this.chart) this.chart.destroy();
-
-      this.chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: this.reportData.map(i => i['Literature Name']),
-          datasets: [{
-            label: 'Total',
-            data: this.reportData.map(i => Number(i['Total']))
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false
-        }
-      });
+    exportCSV() { 
+      let csv="Code,Name,Total,Date\n"; 
+      this.reportData.forEach(i=>csv+=`${i['Literature Code']},${i['Literature Name']},${i['Total']},${i['Date']||''}\n`); 
+      const blob=new Blob([csv]); 
+      const a=document.createElement('a'); 
+      a.href=URL.createObjectURL(blob); 
+      a.download='report.csv'; 
+      a.click(); 
     },
-
-    exportCSV() {
-      let csv = "Code,Name,Total,Date\n";
-      this.reportData.forEach(i => {
-        csv += `${i['Literature Code']},${i['Literature Name']},${i['Total']},${i['Date'] || ''}\n`;
-      });
-      const blob = new Blob([csv]);
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'report.csv';
-      a.click();
-    },
-
-    prevPage() {
-      if (this.currentPage > 1) this.currentPage--;
-    },
-
-    nextPage() {
-      if (this.currentPage < this.totalPages) this.currentPage++;
-    }
+    prevPage(){if(this.currentPage>1)this.currentPage--;},
+    nextPage(){if(this.currentPage<this.totalPages)this.currentPage++;}
   }
-
 }).mount('#app');
 </script>
-
 </body>
 </html>
