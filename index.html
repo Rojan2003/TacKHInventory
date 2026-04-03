@@ -3,95 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TacKH Inventory and Distribution Reports</title>
+<title>TacKH Reports</title>
+
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
-/* 🌌 MODERN GLOW BACKGROUND */
+/* 🌈 GLOBAL */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #0f172a, #1e3a8a);
   margin: 0;
-  position: relative;
-  overflow-x: hidden;
+  font-family: 'Segoe UI', sans-serif;
 }
 
-/* Glow effects */
-body::before {
-  content: '';
-  position: absolute;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(74,108,247,0.4), transparent);
-  top: -100px;
-  left: -100px;
-}
-
-body::after {
-  content: '';
-  position: absolute;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(99,102,241,0.3), transparent);
-  bottom: -100px;
-  right: -100px;
-}
-
-/* Center */
-#app {
-  min-height: 100vh;
+/* 🌟 LAYOUT */
+.layout {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 100vh;
 }
 
-/* 🔐 LOGIN */
-.login-box {
-  background: #fff;
-  padding: 2.5rem;
-  border-radius: 16px;
-  width: 100%;
-  max-width: 360px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-  text-align: center;
-  z-index: 1;
-}
-
-.login-box input {
-  width: 100%;
-  padding: 0.7rem;
-  margin-top: 1rem;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-}
-
-.login-box button {
-  width: 100%;
-  margin-top: 1.2rem;
-  padding: 0.7rem;
-  border: none;
-  border-radius: 8px;
-  background: #111E6C;
-  color: #fff;
-  cursor: pointer;
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  background: #111827;
+  color: white;
+  padding: 1.5rem;
 }
 
 /* MAIN */
-.main-app {
-  width: 100%;
-  min-height: 100vh;
-  background: #f4f6f8;
+.main {
+  flex: 1;
   padding: 2rem;
-  z-index: 1;
+  background: #eef1f5;
 }
 
-.dashboard {
-  max-width: 1200px;
-  margin: auto;
-}
-
-/* Top bar */
+/* TOP */
 .top-bar {
   display: flex;
   justify-content: space-between;
@@ -100,93 +46,163 @@ body::after {
 
 .logout-btn {
   background: #e53935;
-  color: #fff;
+  color: white;
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 8px;
   cursor: pointer;
 }
 
-/* Controls */
-.controls {
+/* FILTER */
+.filter-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 12px;
   display: flex;
-  justify-content: center;
   gap: 1rem;
-  margin: 2rem 0;
+  margin: 1rem 0;
+  align-items: center;
 }
 
-select, input[type="month"] {
+select, input, button {
   padding: 0.6rem;
   border-radius: 8px;
   border: 1px solid #ccc;
 }
 
-/* Summary */
+/* SUMMARY */
 .summary {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px,1fr));
   gap: 1rem;
 }
 
 .summary-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+/* CHART */
+.chart-container {
+  width: 100%;
+  max-width: 500px;
+  height: 250px;
+  margin: 1rem auto;
   background: #fff;
   padding: 1rem;
   border-radius: 12px;
 }
 
-.summary-card h3 {
-  margin: 0;
-  color: #111E6C;
-}
-
-/* Legend */
-.legend {
+/* ROW */
+.row {
   display: flex;
-  justify-content: center;
+  align-items: center;
   gap: 1rem;
 }
 
-.inventory-legend { color: #1976d2; }
-.distribution-legend { color: #388e3c; }
+.col { flex: 1; }
 
-/* Cards */
+.code {
+  font-weight: bold;
+  color: #555;
+}
+
+.name { flex: 2; }
+
+.total {
+  text-align: right;
+  font-weight: bold;
+  color: #1976d2;
+}
+
+/* CARDS */
 .report-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+  gap: 1rem;
   margin-top: 1rem;
 }
 
 .report-card {
-  background: #fff;
-  border-radius: 15px;
-  padding: 1.5rem;
-  position: relative;
-  transition: 0.2s;
+  background: white;
+  padding: 1rem;
+  border-radius: 10px;
+  border-left: 5px solid #1976d2;
 }
 
-.report-card:hover {
-  transform: translateY(-5px);
+/* TABLE */
+table {
+  width: 100%;
+  background: white;
+  border-collapse: collapse;
+  margin-top: 1rem;
 }
 
-.report-card.inventory { background: #e3f2fd; }
-.report-card.distribution { background: #e8f5e9; }
-
-.label {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  padding: 0.3rem 0.6rem;
-  border-radius: 6px;
-  color: #fff;
+th {
+  text-align: left;
+  background: #f9fafb;
 }
 
-.label-inventory { background: #1976d2; }
-.label-distribution { background: #388e3c; }
+th, td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
 
-.section-title {
-  margin-top: 2rem;
+td:last-child {
   font-weight: bold;
+  color: #1976d2;
+}
+
+/* 🔥 MODERN LOGIN */
+.login-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #1e3a8a, #0f172a);
+}
+
+.login-card {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(15px);
+  padding: 2rem;
+  border-radius: 16px;
+  width: 320px;
+  text-align: center;
+  color: white;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+.login-card h2 {
+  margin-bottom: 1.5rem;
+}
+
+/* INPUT */
+.login-card input {
+  width: 100%;
+  padding: 0.7rem;
+  border-radius: 10px;
+  border: none;
+  margin-bottom: 1rem;
+  outline: none;
+}
+
+/* BUTTON */
+.login-card button {
+  width: 100%;
+  padding: 0.7rem;
+  border-radius: 10px;
+  border: none;
+  background: #4f46e5;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.login-card button:hover {
+  background: #6366f1;
+  transform: translateY(-2px);
 }
 
 </style>
@@ -195,95 +211,90 @@ select, input[type="month"] {
 <body>
 <div id="app">
 
-  <!-- 🔐 LOGIN -->
-  <div v-if="!authenticated" class="login-box">
-    <h2>🔐 Secure Access</h2>
-
-    <input type="password"
-      v-model="password"
-      placeholder="Password"
-      @keyup.enter="login">
-
+<!-- LOGIN -->
+<div v-if="!authenticated" class="login-container">
+  <div class="login-card">
+    <h2>🔐 TacKH Access</h2>
+    <input type="password" v-model="password" placeholder="Enter password">
     <button @click="login">Login</button>
+  </div>
+</div>
 
-    <p v-if="loginError" style="color:red;">Incorrect password</p>
+<!-- MAIN -->
+<div v-if="authenticated" class="layout">
+
+  <div class="sidebar">
+    <h2>TacKH</h2>
   </div>
 
-  <!-- ✅ APP -->
-  <div v-if="authenticated" class="main-app">
+  <div class="main">
 
-    <div class="dashboard">
-
-      <div class="top-bar">
-        <h1>TacKH Reports</h1>
-        <button class="logout-btn" @click="logout">Logout</button>
-      </div>
-
-      <div class="controls">
-        <select v-model="selectedCongregation" @change="fetchReport">
-          <option value="" disabled>Select Congregation</option>
-          <option value="East">East</option>
-          <option value="West">West</option>
-          <option value="Central">Central</option>
-          <option value="SLC">SLC</option>
-          <option value="Tagalog">Tagalog</option>
-        </select>
-
-        <input type="month" v-model="selectedMonth" @change="fetchReport">
-      </div>
-
-      <!-- SUMMARY -->
-      <div class="summary" v-if="reportData.length">
-        <div class="summary-card">
-          <p>Total Records</p>
-          <h3>{{ reportData.length }}</h3>
-        </div>
-
-        <div class="summary-card">
-          <p>Total Quantity</p>
-          <h3>{{ totalQuantity }}</h3>
-        </div>
-      </div>
-
-      <div class="legend">
-        <div class="inventory-legend">🟦 Inventory</div>
-        <div class="distribution-legend">🟩 Distribution</div>
-      </div>
-
-      <div v-if="loading">Loading...</div>
-      <div v-else-if="error">{{ error }}</div>
-      <div v-else-if="reportData.length === 0">No data</div>
-
-      <div class="section-title" v-if="reportData.length">
-        Report Details
-      </div>
-
-      <div class="report-cards" v-if="reportData.length">
-        <div 
-          class="report-card"
-          v-for="item in reportData"
-          :key="item['Literature Code']"
-          :class="selectedCongregation==='East' ? 'inventory' : 'distribution'"
-        >
-          <div class="label"
-            :class="selectedCongregation==='East' ? 'label-inventory' : 'label-distribution'">
-            {{ selectedCongregation==='East' ? 'Inventory' : 'Distribution' }}
-          </div>
-
-          <h4>{{ item['Literature Name'] }}</h4>
-          <p><strong>Code:</strong> {{ item['Literature Code'] }}</p>
-          <p><strong>Total:</strong> {{ item['Total'] }}</p>
-          <p><strong>Date:</strong> {{ formatDate(item['Date']) }}</p>
-
-          <p v-if="item['Congregation'] && selectedCongregation!=='East'">
-            {{ item['Congregation'] }}
-          </p>
-        </div>
-      </div>
-
+    <div class="top-bar">
+      <h1>Reports</h1>
+      <button class="logout-btn" @click="logout">Logout</button>
     </div>
 
+    <div class="filter-card">
+      <select v-model="selectedCongregation" @change="fetchReport">
+        <option value="" disabled>Select Congregation</option>
+        <option>East</option>
+        <option>West</option>
+        <option>Central</option>
+        <option>Tagalog</option>
+        <option>SLC</option>
+      </select>
+
+      <input type="month" v-model="selectedMonth" @change="fetchReport">
+
+      <button @click="toggleView">
+        {{ viewMode === 'cards' ? 'Table' : 'Cards' }}
+      </button>
+
+      <button @click="exportCSV">Export</button>
+    </div>
+
+    <div class="summary" v-if="reportData.length">
+      <div class="summary-card">
+        Total Records: {{ reportData.length }}
+      </div>
+      <div class="summary-card">
+        Total Quantity: {{ totalQuantity }}
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <canvas id="chart"></canvas>
+    </div>
+
+    <div v-if="viewMode === 'cards'" class="report-cards">
+      <div v-for="item in reportData" class="report-card">
+        <div class="row">
+          <div class="col code">{{ item['Literature Code'] }}</div>
+          <div class="col name">{{ item['Literature Name'] }}</div>
+          <div class="col total">{{ item['Total'] }}</div>
+        </div>
+      </div>
+    </div>
+
+    <table v-if="viewMode === 'table'">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="item in reportData">
+          <td>{{ item['Literature Code'] }}</td>
+          <td>{{ item['Literature Name'] }}</td>
+          <td>{{ item['Total'] }}</td>
+        </tr>
+      </tbody>
+    </table>
+
   </div>
+</div>
 </div>
 
 <script>
@@ -294,73 +305,80 @@ createApp({
     return {
       authenticated: false,
       password: '',
-      loginError: false,
 
       selectedMonth: '',
       selectedCongregation: '',
       reportData: [],
-      loading: false,
-      error: null
+      viewMode: 'cards',
+      chart: null
     }
   },
 
   computed: {
     totalQuantity() {
-      return this.reportData.reduce((sum, item) => {
-        return sum + Number(item['Total'] || 0);
-      }, 0);
-    }
-  },
-
-  mounted() {
-    if (localStorage.getItem("auth") === "true") {
-      this.authenticated = true;
+      return this.reportData.reduce((sum, i) => sum + Number(i['Total'] || 0), 0);
     }
   },
 
   methods: {
     login() {
-      const CORRECT_PASSWORD = "congregation_123";
-
-      if (this.password === CORRECT_PASSWORD) {
+      if (this.password === "congregation_123") {
         this.authenticated = true;
-        this.loginError = false;
-        localStorage.setItem("auth", "true");
-      } else {
-        this.loginError = true;
       }
     },
 
     logout() {
       this.authenticated = false;
-      this.password = '';
-      localStorage.removeItem("auth");
+    },
+
+    toggleView() {
+      this.viewMode = this.viewMode === 'cards' ? 'table' : 'cards';
     },
 
     async fetchReport() {
       if (!this.selectedMonth || !this.selectedCongregation) return;
 
-      this.loading = true;
-      this.error = null;
+      const url = `https://script.google.com/macros/s/AKfycbzO3FEM3m7nDKgFIKafPRtLji92uh4KV2khpTW_WGzicUMI6_2UYhJ9nsGBfuemp8Rp/exec?month=${this.selectedMonth}&congregation=${this.selectedCongregation}`;
 
-      try {
-        const url = `https://script.google.com/macros/s/AKfycbzO3FEM3m7nDKgFIKafPRtLji92uh4KV2khpTW_WGzicUMI6_2UYhJ9nsGBfuemp8Rp/exec?month=${this.selectedMonth}&congregation=${this.selectedCongregation}`;
-        const response = await fetch(url);
+      const res = await fetch(url);
+      this.reportData = await res.json();
 
-        if (!response.ok) throw new Error("Failed to fetch report");
-
-        this.reportData = await response.json();
-
-      } catch(err) {
-        this.error = err.message;
-        this.reportData = [];
-      } finally {
-        this.loading = false;
-      }
+      this.$nextTick(() => this.renderChart());
     },
 
-    formatDate(dateStr) {
-      return new Date(dateStr).toISOString().split('T')[0];
+    renderChart() {
+      const ctx = document.getElementById('chart');
+
+      if (this.chart) this.chart.destroy();
+
+      this.chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: this.reportData.map(i => i['Literature Name']),
+          datasets: [{
+            label: 'Total',
+            data: this.reportData.map(i => Number(i['Total']))
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+    },
+
+    exportCSV() {
+      let csv = "Code,Name,Total\n";
+
+      this.reportData.forEach(i => {
+        csv += `${i['Literature Code']},${i['Literature Name']},${i['Total']}\n`;
+      });
+
+      const blob = new Blob([csv]);
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'report.csv';
+      a.click();
     }
   }
 
