@@ -1,400 +1,413 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TacKH Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TacKH Dashboard</title>
+  
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
-<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    :root {
+      --bg:#e7efec;
+      --card:#ffffff;
+      --primary:#3A8570;
+      --dark:#2C594A;
+      --accent:#9ADBC7;
+    }
 
-<style>
-:root {
-  --bg:#e7efec;
-  --card:#ffffff;
-  --primary:#3A8570;
-  --dark:#2C594A;
-  --accent:#9ADBC7;
-}
+    * {
+      box-sizing: border-box;
+    }
 
-/* 🔥 GLOBAL FIX (IMPORTANT) */
-* {
-  box-sizing: border-box;
-}
+    body {
+      margin:0;
+      font-family:'Segoe UI',sans-serif;
+      background:var(--bg);
+    }
 
-/* ===== BODY ===== */
-body {
-  margin:0;
-  font-family:'Segoe UI',sans-serif;
-  background:var(--bg);
-}
+    .login-container {
+      height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:1rem;
+      background:linear-gradient(135deg,#E6F2EC,#cfe7dd);
+    }
 
-/* ===== LOGIN ===== */
-.login-container {
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:1rem; /* ✅ prevents edge clipping */
-  background:linear-gradient(135deg,#E6F2EC,#cfe7dd);
-}
+    .login-card {
+      width:100%;
+      max-width:340px;
+      padding:2rem;
+      border-radius:20px;
+      background:var(--primary);
+      color:white;
+      text-align:center;
+      box-shadow:0 10px 25px rgba(0,0,0,0.15);
+    }
 
-.login-card {
-  width:100%;
-  max-width:340px;
-  padding:2rem;
-  border-radius:20px;
-  background:var(--primary);
-  color:white;
-  text-align:center;
-  box-shadow:0 10px 25px rgba(0,0,0,0.15);
-}
+    .login-card h2 {
+      margin-bottom:1.2rem;
+    }
 
-.login-card h2 {
-  margin-bottom:1.2rem;
-}
+    .login-card input {
+      width:100%;
+      padding:12px;
+      border-radius:12px;
+      border:none;
+      margin-bottom:12px;
+      outline:none;
+      font-size:14px;
+    }
 
-/* ✅ FIXED INPUT */
-.login-card input {
-  width:100%;
-  padding:12px;
-  border-radius:12px;
-  border:none;
-  margin-bottom:12px;
-  outline:none;
-  font-size:14px;
-}
+    .login-card input::placeholder {
+      color:#777;
+    }
 
-.login-card input::placeholder {
-  color:#777;
-}
+    .login-card button {
+      width:100%;
+      padding:12px;
+      border-radius:12px;
+      border:none;
+      background:var(--dark);
+      color:white;
+      font-weight:600;
+      cursor:pointer;
+      transition:0.2s;
+    }
 
-/* BUTTON */
-.login-card button {
-  width:100%;
-  padding:12px;
-  border-radius:12px;
-  border:none;
-  background:var(--dark);
-  color:white;
-  font-weight:600;
-  cursor:pointer;
-  transition:0.2s;
-}
+    .login-card button:hover {
+      background:#244d3f;
+    }
 
-.login-card button:hover {
-  background:#244d3f;
-}
+    .main {
+      max-width:700px;
+      margin:20px auto;
+      padding:15px;
+    }
 
-/* ===== MAIN ===== */
-.main {
-  max-width:700px;
-  margin:20px auto;
-  padding:15px;
-}
+    .header {
+      text-align:center;
+      margin-bottom:10px;
+    }
 
-/* ===== HEADER ===== */
-.header {
-  text-align:center;
-  margin-bottom:10px;
-}
+    .logout-btn {
+      background:#ef4444;
+      color:white;
+      border:none;
+      padding:8px 12px;
+      border-radius:10px;
+      margin-top:5px;
+    }
 
-.logout-btn {
-  background:#ef4444;
-  color:white;
-  border:none;
-  padding:8px 12px;
-  border-radius:10px;
-  margin-top:5px;
-}
+    .filter {
+      background:var(--card);
+      padding:15px;
+      border-radius:16px;
+      box-shadow:0 4px 15px rgba(0,0,0,0.05);
+      margin-bottom:15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-/* ===== FILTER ===== */
-.filter {
-  background:var(--card);
-  padding:15px;
-  border-radius:16px;
-  box-shadow:0 4px 15px rgba(0,0,0,0.05);
-  margin-bottom:15px;
-}
+    .filter input,
+    .filter select,
+    .filter button {
+      width:100%;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid #ddd;
+      font-size:14px;
+    }
 
-.filter input,
-.filter select,
-.filter button {
-  width:100%;
-  margin-bottom:10px;
-  padding:12px;
-  border-radius:12px;
-  border:1px solid #ddd;
-  font-size:14px;
-}
+    .summary {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
 
-/* ===== SUMMARY ===== */
-.summary {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-}
+    .summary-card {
+      background:var(--primary);
+      color:white;
+      padding:12px;
+      border-radius:12px;
+      text-align:center;
+    }
 
-.summary-card {
-  background:var(--primary);
-  color:white;
-  padding:12px;
-  border-radius:12px;
-  text-align:center;
-}
+    .cards {
+      margin-top:15px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
 
-/* ===== REPORT CARDS ===== */
-.cards {
-  margin-top:15px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
+    .card {
+      background:var(--card);
+      padding:15px;
+      border-radius:14px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.05);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      animation:fade .3s ease;
+    }
 
-.card {
-  background:var(--card);
-  padding:15px;
-  border-radius:14px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.05);
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  animation:fade .3s ease;
-}
+    .card .info {
+      display:flex;
+      flex-direction:row;
+      justify-content:space-between;
+      width:100%;
+    }
 
-.card .info {
-  display:flex;
-  flex-direction:column;
-}
+    .card .code {
+      font-size:12px;
+      color:#888;
+      flex: 1;
+    }
 
-.card .code {
-  font-size:12px;
-  color:#888;
-}
+    .card .name {
+      font-weight:600;
+      flex: 3;
+    }
 
-.card .name {
-  font-weight:600;
-}
+    .card .total {
+      font-weight:bold;
+      color:var(--primary);
+      text-align:right;
+      flex: 1;
+    }
 
-.card .total {
-  font-weight:bold;
-  color:var(--primary);
-}
+    .pagination {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-top:10px;
+    }
 
-/* ===== PAGINATION ===== */
-.pagination {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-top:10px;
-}
+    .pagination button {
+      padding:8px 12px;
+      border:none;
+      border-radius:8px;
+      background:var(--primary);
+      color:white;
+      cursor:pointer;
+    }
 
-.pagination button {
-  padding:8px 12px;
-  border:none;
-  border-radius:8px;
-  background:var(--primary);
-  color:white;
-  cursor:pointer;
-}
+    .spinner-overlay {
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,0.3);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    }
 
-/* ===== SPINNER ===== */
-.spinner-overlay {
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.3);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
+    .spinner {
+      width:40px;
+      height:40px;
+      border:5px solid #ccc;
+      border-top:5px solid var(--primary);
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+    }
 
-.spinner {
-  width:40px;
-  height:40px;
-  border:5px solid #ccc;
-  border-top:5px solid var(--primary);
-  border-radius:50%;
-  animation:spin 1s linear infinite;
-}
+    @keyframes spin {
+      to { transform:rotate(360deg); }
+    }
 
-@keyframes spin {
-  to { transform:rotate(360deg); }
-}
+    @keyframes fade {
+      from {opacity:0; transform:translateY(10px);}
+      to {opacity:1;}
+    }
 
-@keyframes fade {
-  from {opacity:0; transform:translateY(10px);}
-  to {opacity:1;}
-}
+    @media(max-width:480px){
+      .filter {
+        flex-direction: column;
+        gap: 15px;
+      }
 
-/* ===== MOBILE TWEAK ===== */
-@media(max-width:480px){
-  .summary {
-    grid-template-columns:1fr;
-  }
-}
-</style>
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      .cards {
+        gap: 15px;
+      }
+
+      .filter input,
+      .filter select,
+      .filter button {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 
 <body>
-<div id="app">
-
-<!-- LOGIN -->
-<div v-if="!authenticated" class="login-container">
-  <div class="login-card">
-    <h2>🔐 TacKH Access</h2>
-    <input type="password" v-model="password" placeholder="Enter your password">
-    <button @click="login">Login</button>
-  </div>
-</div>
-
-<!-- DASHBOARD -->
-<div v-if="authenticated" class="main">
-
-  <div class="header">
-    <h2>Inventory and Distribution System</h2>
-    <button class="logout-btn" @click="logout">Logout</button>
-  </div>
-
-  <!-- FILTER -->
-  <div class="filter">
-    <select v-model="selectedCongregation" @change="fetchReport">
-      <option value="" disabled>Select Congregation</option>
-      <option>East</option>
-      <option>West</option>
-      <option>Central</option>
-      <option>Tagalog</option>
-      <option>SLC</option>
-    </select>
-
-    <input type="month" v-model="selectedMonth" @change="fetchReport">
-    <input type="text" v-model="searchQuery" placeholder="Search...">
-
-    <button @click="exportCSV">Export CSV</button>
-  </div>
-
-  <!-- SUMMARY -->
-  <div class="summary" v-if="filteredData.length">
-    <div class="summary-card">Total: {{ filteredData.length }}</div>
-    <div class="summary-card">Qty: {{ totalQuantity }}</div>
-  </div>
-
-  <!-- CARDS -->
-  <div class="cards">
-    <div class="card" v-for="item in paginatedData">
-      <div class="info">
-        <div class="code">{{ item['Literature Code'] }}</div>
-        <div class="name">{{ item['Literature Name'] }}</div>
+  <div id="app">
+    <!-- LOGIN -->
+    <div v-if="!authenticated" class="login-container">
+      <div class="login-card">
+        <h2>🔐 TacKH Access</h2>
+        <input type="password" v-model="password" placeholder="Enter your password">
+        <button @click="login">Login</button>
       </div>
-      <div class="total">{{ item.Total }}</div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div v-if="authenticated" class="main">
+      <div class="header">
+        <h2>Inventory and Distribution System</h2>
+        <button class="logout-btn" @click="logout">Logout</button>
+      </div>
+
+      <!-- FILTER -->
+      <div class="filter">
+        <select v-model="selectedCongregation" @change="fetchReport">
+          <option value="" disabled>Select Congregation</option>
+          <option>East</option>
+          <option>West</option>
+          <option>Central</option>
+          <option>Tagalog</option>
+          <option>SLC</option>
+        </select>
+
+        <input type="month" v-model="selectedMonth" @change="fetchReport" placeholder="Select Month">
+
+        <input type="text" v-model="searchQuery" placeholder="Search...">
+
+        <button @click="exportCSV">Export CSV</button>
+      </div>
+
+      <!-- SUMMARY -->
+      <div class="summary" v-if="filteredData.length">
+        <div class="summary-card">Total: {{ filteredData.length }}</div>
+        <div class="summary-card">Qty: {{ totalQuantity }}</div>
+      </div>
+
+      <!-- CARDS -->
+      <div class="cards">
+        <div class="card" v-for="item in paginatedData" :key="item.LiteratureCode">
+          <div class="info">
+            <!-- Display Literature Code -->
+            <div class="code">{{ item['Literature Code'] }}</div>
+            
+            <!-- Display Literature Name -->
+            <div class="name">{{ item['Literature Name'] }}</div>
+
+            <!-- Display the Total -->
+            <div class="total">{{ item.Total }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGINATION -->
+      <div class="pagination">
+        <button @click="prevPage">Prev</button>
+        <span>Page {{ currentPage }} / {{ totalPages }}</span>
+        <button @click="nextPage">Next</button>
+      </div>
+    </div>
+
+    <!-- SPINNER -->
+    <div v-if="loading" class="spinner-overlay">
+      <div class="spinner"></div>
     </div>
   </div>
 
-  <!-- PAGINATION -->
-  <div class="pagination">
-    <button @click="prevPage">Prev</button>
-    <span>Page {{ currentPage }} / {{ totalPages }}</span>
-    <button @click="nextPage">Next</button>
-  </div>
+  <script>
+    const { createApp } = Vue;
 
-</div>
+    createApp({
+      data() {
+        return {
+          authenticated:false,
+          password:'',
+          selectedMonth:'',
+          selectedCongregation:'',
+          reportData:[],
+          searchQuery:'',
+          loading:false,
+          currentPage:1,
+          perPage:5
+        }
+      },
 
-<!-- SPINNER -->
-<div v-if="loading" class="spinner-overlay">
-  <div class="spinner"></div>
-</div>
+      computed: {
+        filteredData() {
+          const q=this.searchQuery.toLowerCase();
+          if(!q) return this.reportData;
+          return this.reportData.filter(i =>
+            (i['Literature Name']||'').toLowerCase().includes(q)
+          );
+        },
 
-<script>
-const { createApp } = Vue;
+        totalQuantity() {
+          return this.filteredData.reduce((s,i)=>s+Number(i.Total||0),0);
+        },
 
-createApp({
-  data() {
-    return {
-      authenticated:false,
-      password:'',
-      selectedMonth:'',
-      selectedCongregation:'',
-      reportData:[],
-      searchQuery:'',
-      loading:false,
-      currentPage:1,
-      perPage:5
-    }
-  },
+        totalPages() {
+          return Math.ceil(this.filteredData.length / this.perPage) || 1;
+        },
 
-  computed: {
-    filteredData() {
-      const q=this.searchQuery.toLowerCase();
-      if(!q) return this.reportData;
-      return this.reportData.filter(i =>
-        (i['Literature Name']||'').toLowerCase().includes(q)
-      );
-    },
+        paginatedData() {
+          const start=(this.currentPage-1)*this.perPage;
+          return this.filteredData.slice(start,start+this.perPage);
+        }
+      },
 
-    totalQuantity() {
-      return this.filteredData.reduce((s,i)=>s+Number(i.Total||0),0);
-    },
+      methods: {
+        login() {
+          if(this.password==='congregation_123') this.authenticated=true;
+          else alert('Wrong password');
+        },
 
-    totalPages() {
-      return Math.ceil(this.filteredData.length / this.perPage) || 1;
-    },
+        logout() {
+          this.authenticated=false;
+          this.password='';
+        },
 
-    paginatedData() {
-      const start=(this.currentPage-1)*this.perPage;
-      return this.filteredData.slice(start,start+this.perPage);
-    }
-  },
+        prevPage() {
+          if(this.currentPage>1) this.currentPage--;
+        },
 
-  methods: {
-    login() {
-      if(this.password==='congregation_123') this.authenticated=true;
-      else alert('Wrong password');
-    },
+        nextPage() {
+          if(this.currentPage<this.totalPages) this.currentPage++;
+        },
 
-    logout() {
-      this.authenticated=false;
-      this.password='';
-    },
+        async fetchReport() {
+          if(!this.selectedMonth||!this.selectedCongregation) return;
 
-    prevPage() {
-      if(this.currentPage>1) this.currentPage--;
-    },
+          this.loading=true;
+          this.currentPage=1;
 
-    nextPage() {
-      if(this.currentPage<this.totalPages) this.currentPage++;
-    },
+          try {
+            const url=`https://script.google.com/macros/s/AKfycbzO3FEM3m7nDKgFIKafPRtLji92uh4KV2khpTW_WGzicUMI6_2UYhJ9nsGBfuemp8Rp/exec?month=${this.selectedMonth}&congregation=${this.selectedCongregation}`;
+            const res=await fetch(url);
+            this.reportData=await res.json();
+          } finally {
+            this.loading=false;
+          }
+        },
 
-    async fetchReport() {
-      if(!this.selectedMonth||!this.selectedCongregation) return;
+        exportCSV() {
+          let csv="Code,Name,Total\n";
+          this.reportData.forEach(i=>{
+            csv+=`${i['Literature Code']},${i['Literature Name']},${i['Total']}\n`;
+          });
 
-      this.loading=true;
-      this.currentPage=1;
-
-      try {
-        const url=`https://script.google.com/macros/s/AKfycbzO3FEM3m7nDKgFIKafPRtLji92uh4KV2khpTW_WGzicUMI6_2UYhJ9nsGBfuemp8Rp/exec?month=${this.selectedMonth}&congregation=${this.selectedCongregation}`;
-        const res=await fetch(url);
-        this.reportData=await res.json();
-      } finally {
-        this.loading=false;
+          const blob=new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+          const a=document.createElement('a');
+          a.href=URL.createObjectURL(blob);
+          a.download='report.csv';
+          a.click();
+        }
       }
-    },
-
-    exportCSV() {
-      let csv="Code,Name,Total\n";
-      this.reportData.forEach(i=>{
-        csv+=`${i['Literature Code']},${i['Literature Name']},${i['Total']}\n`;
-      });
-
-      const blob=new Blob([csv]);
-      const a=document.createElement('a');
-      a.href=URL.createObjectURL(blob);
-      a.download='report.csv';
-      a.click();
-    }
-  }
-}).mount('#app');
-</script>
-
+    }).mount('#app');
+  </script>
 </body>
 </html>
