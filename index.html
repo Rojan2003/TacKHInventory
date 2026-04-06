@@ -1,413 +1,441 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TacKH Dashboard</title>
-  
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TacKH Dashboard</title>
 
-  <style>
-    :root {
-      --bg:#e7efec;
-      --card:#ffffff;
-      --primary:#3A8570;
-      --dark:#2C594A;
-      --accent:#9ADBC7;
-    }
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
-    * {
-      box-sizing: border-box;
-    }
+<style>
+:root {
+  --bg:#e7efec;
+  --card:#ffffff;
+  --primary:#3A8570;
+  --dark:#2C594A;
+  --accent:#9ADBC7;
+}
 
-    body {
-      margin:0;
-      font-family:'Segoe UI',sans-serif;
-      background:var(--bg);
-    }
+* { box-sizing:border-box; }
 
-    .login-container {
-      height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      padding:1rem;
-      background:linear-gradient(135deg,#E6F2EC,#cfe7dd);
-    }
+body {
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  background:var(--bg);
+}
 
-    .login-card {
-      width:100%;
-      max-width:340px;
-      padding:2rem;
-      border-radius:20px;
-      background:var(--primary);
-      color:white;
-      text-align:center;
-      box-shadow:0 10px 25px rgba(0,0,0,0.15);
-    }
+/* LOGIN */
+.login-container {
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#E6F2EC,#cfe7dd);
+}
 
-    .login-card h2 {
-      margin-bottom:1.2rem;
-    }
+.login-card {
+  width:100%;
+  max-width:340px;
+  padding:2rem;
+  border-radius:20px;
+  background:var(--primary);
+  color:white;
+  text-align:center;
+  box-shadow:0 10px 25px rgba(0,0,0,0.15);
+}
 
-    .login-card input {
-      width:100%;
-      padding:12px;
-      border-radius:12px;
-      border:none;
-      margin-bottom:12px;
-      outline:none;
-      font-size:14px;
-    }
+.login-card input {
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:none;
+  margin-bottom:12px;
+}
 
-    .login-card input::placeholder {
-      color:#777;
-    }
+.login-card button {
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:var(--dark);
+  color:white;
+}
 
-    .login-card button {
-      width:100%;
-      padding:12px;
-      border-radius:12px;
-      border:none;
-      background:var(--dark);
-      color:white;
-      font-weight:600;
-      cursor:pointer;
-      transition:0.2s;
-    }
+/* MAIN */
+.main {
+  max-width:700px;
+  margin:auto;
+  padding:15px;
+}
 
-    .login-card button:hover {
-      background:#244d3f;
-    }
+.header {
+  text-align:center;
+}
 
-    .main {
-      max-width:700px;
-      margin:20px auto;
-      padding:15px;
-    }
+.logout-btn {
+  margin-top:5px;
+  background:#ef4444;
+  color:white;
+  border:none;
+  padding:8px 12px;
+  border-radius:10px;
+}
 
-    .header {
-      text-align:center;
-      margin-bottom:10px;
-    }
+/* FILTER */
+.filter {
+  background:var(--card);
+  padding:15px;
+  border-radius:16px;
+  margin:15px 0;
+  box-shadow:0 4px 10px rgba(0,0,0,0.05);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
 
-    .logout-btn {
-      background:#ef4444;
-      color:white;
-      border:none;
-      padding:8px 12px;
-      border-radius:10px;
-      margin-top:5px;
-    }
+.filter input,
+.filter select {
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #ddd;
+}
 
-    .filter {
-      background:var(--card);
-      padding:15px;
-      border-radius:16px;
-      box-shadow:0 4px 15px rgba(0,0,0,0.05);
-      margin-bottom:15px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+/* SUMMARY */
+.summary {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
 
-    .filter input,
-    .filter select,
-    .filter button {
-      width:100%;
-      padding:12px;
-      border-radius:12px;
-      border:1px solid #ddd;
-      font-size:14px;
-    }
+.summary-card {
+  background:var(--primary);
+  color:white;
+  padding:12px;
+  border-radius:12px;
+  text-align:center;
+}
 
-    .summary {
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-    }
+/* CARDS */
+.cards {
+  margin-top:15px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
 
-    .summary-card {
-      background:var(--primary);
-      color:white;
-      padding:12px;
-      border-radius:12px;
-      text-align:center;
-    }
+.card {
+  background:var(--card);
+  padding:15px;
+  border-radius:14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  box-shadow:0 4px 10px rgba(0,0,0,0.05);
+}
 
-    .cards {
-      margin-top:15px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
+.info {
+  display:flex;
+  flex-direction:column;
+}
 
-    .card {
-      background:var(--card);
-      padding:15px;
-      border-radius:14px;
-      box-shadow:0 4px 12px rgba(0,0,0,0.05);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      animation:fade .3s ease;
-    }
+.code {
+  font-size:12px;
+  color:#777;
+}
 
-    .card .info {
-      display:flex;
-      flex-direction:row;
-      justify-content:space-between;
-      width:100%;
-    }
+.name {
+  font-weight:600;
+}
 
-    .card .code {
-      font-size:12px;
-      color:#888;
-      flex: 1;
-    }
+/* RIGHT SIDE */
+.right {
+  text-align:right;
+}
 
-    .card .name {
-      font-weight:600;
-      flex: 3;
-    }
+/* TOTAL */
+.total {
+  font-weight:bold;
+  color:var(--primary);
+}
 
-    .card .total {
-      font-weight:bold;
-      color:var(--primary);
-      text-align:right;
-      flex: 1;
-    }
+/* MOVEMENT */
+.movement {
+  font-size:12px;
+}
+.up { color:green; }
+.down { color:red; }
+.neutral { color:gray; }
 
-    .pagination {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-top:10px;
-    }
+/* WARNINGS */
+.warning {
+  font-size:11px;
+  padding:2px 6px;
+  border-radius:6px;
+  margin-top:3px;
+  display:inline-block;
+}
 
-    .pagination button {
-      padding:8px 12px;
-      border:none;
-      border-radius:8px;
-      background:var(--primary);
-      color:white;
-      cursor:pointer;
-    }
+.low { background:#fee2e2; color:#b91c1c; }
+.high { background:#dcfce7; color:#166534; }
 
-    .spinner-overlay {
-      position:fixed;
-      top:0;
-      left:0;
-      width:100%;
-      height:100%;
-      background:rgba(0,0,0,0.3);
-      display:flex;
-      justify-content:center;
-      align-items:center;
-    }
+/* PAGINATION */
+.pagination {
+  display:flex;
+  justify-content:space-between;
+  margin-top:10px;
+}
 
-    .spinner {
-      width:40px;
-      height:40px;
-      border:5px solid #ccc;
-      border-top:5px solid var(--primary);
-      border-radius:50%;
-      animation:spin 1s linear infinite;
-    }
+.pagination button {
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:var(--primary);
+  color:white;
+}
 
-    @keyframes spin {
-      to { transform:rotate(360deg); }
-    }
+/* SPINNER */
+.spinner-overlay {
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.3);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
 
-    @keyframes fade {
-      from {opacity:0; transform:translateY(10px);}
-      to {opacity:1;}
-    }
+.spinner {
+  width:40px;
+  height:40px;
+  border:5px solid #ccc;
+  border-top:5px solid var(--primary);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
 
-    @media(max-width:480px){
-      .filter {
-        flex-direction: column;
-        gap: 15px;
-      }
+@keyframes spin {
+  to { transform:rotate(360deg); }
+}
 
-      .summary {
-        grid-template-columns: 1fr;
-      }
-
-      .cards {
-        gap: 15px;
-      }
-
-      .filter input,
-      .filter select,
-      .filter button {
-        width: 100%;
-      }
-    }
-  </style>
+/* MOBILE */
+@media(max-width:480px){
+  .summary {
+    grid-template-columns:1fr;
+  }
+}
+</style>
 </head>
 
 <body>
-  <div id="app">
-    <!-- LOGIN -->
-    <div v-if="!authenticated" class="login-container">
-      <div class="login-card">
-        <h2>🔐 TacKH Access</h2>
-        <input type="password" v-model="password" placeholder="Enter your password">
-        <button @click="login">Login</button>
+<div id="app">
+
+<!-- LOGIN -->
+<div v-if="!authenticated" class="login-container">
+  <div class="login-card">
+    <h2>🔐 TacKH Access</h2>
+    <input type="password" v-model="password" placeholder="Enter password">
+    <button @click="login">Login</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div v-if="authenticated" class="main">
+
+  <div class="header">
+    <h2>Inventory & Distribution System</h2>
+    <button class="logout-btn" @click="logout">Logout</button>
+  </div>
+
+  <div class="filter">
+    <select v-model="selectedCongregation" @change="fetchReport">
+      <option disabled value="">Select Congregation</option>
+      <option>East</option>
+      <option>West</option>
+      <option>Central</option>
+      <option>Tagalog</option>
+      <option>SLC</option>
+    </select>
+
+    <input type="month" v-model="selectedMonth" @change="fetchReport">
+    <input type="text" v-model="searchQuery" placeholder="Search...">
+  </div>
+
+  <div class="summary" v-if="filteredData.length">
+    <div class="summary-card">Total: {{ filteredData.length }}</div>
+    <div class="summary-card">Qty: {{ totalQuantity }}</div>
+  </div>
+
+  <div class="cards">
+    <div class="card" v-for="item in paginatedData" :key="item['Literature Code']">
+      
+      <div class="info">
+        <div class="code">{{ item['Literature Code'] }}</div>
+        <div class="name">{{ item['Literature Name'] }}</div>
       </div>
-    </div>
 
-    <!-- DASHBOARD -->
-    <div v-if="authenticated" class="main">
-      <div class="header">
-        <h2>Inventory and Distribution System</h2>
-        <button class="logout-btn" @click="logout">Logout</button>
-      </div>
+      <div class="right">
+        <div class="total">
+          {{ item.Total }}
+          <span v-if="getMovement(item)"
+                :class="['movement', getMovement(item).class]">
+            {{ getMovement(item).text }}
+          </span>
+        </div>
 
-      <!-- FILTER -->
-      <div class="filter">
-        <select v-model="selectedCongregation" @change="fetchReport">
-          <option value="" disabled>Select Congregation</option>
-          <option>East</option>
-          <option>West</option>
-          <option>Central</option>
-          <option>Tagalog</option>
-          <option>SLC</option>
-        </select>
-
-        <input type="month" v-model="selectedMonth" @change="fetchReport" placeholder="Select Month">
-
-        <input type="text" v-model="searchQuery" placeholder="Search...">
-
-        <button @click="exportCSV">Export CSV</button>
-      </div>
-
-      <!-- SUMMARY -->
-      <div class="summary" v-if="filteredData.length">
-        <div class="summary-card">Total: {{ filteredData.length }}</div>
-        <div class="summary-card">Qty: {{ totalQuantity }}</div>
-      </div>
-
-      <!-- CARDS -->
-      <div class="cards">
-        <div class="card" v-for="item in paginatedData" :key="item.LiteratureCode">
-          <div class="info">
-            <!-- Display Literature Code -->
-            <div class="code">{{ item['Literature Code'] }}</div>
-            
-            <!-- Display Literature Name -->
-            <div class="name">{{ item['Literature Name'] }}</div>
-
-            <!-- Display the Total -->
-            <div class="total">{{ item.Total }}</div>
-          </div>
+        <!-- WARNING -->
+        <div v-if="getWarning(item)"
+             :class="['warning', getWarning(item).class]">
+          {{ getWarning(item).text }}
         </div>
       </div>
 
-      <!-- PAGINATION -->
-      <div class="pagination">
-        <button @click="prevPage">Prev</button>
-        <span>Page {{ currentPage }} / {{ totalPages }}</span>
-        <button @click="nextPage">Next</button>
-      </div>
-    </div>
-
-    <!-- SPINNER -->
-    <div v-if="loading" class="spinner-overlay">
-      <div class="spinner"></div>
     </div>
   </div>
 
-  <script>
-    const { createApp } = Vue;
+  <div class="pagination">
+    <button @click="prevPage">Prev</button>
+    <span>{{ currentPage }} / {{ totalPages }}</span>
+    <button @click="nextPage">Next</button>
+  </div>
 
-    createApp({
-      data() {
-        return {
-          authenticated:false,
-          password:'',
-          selectedMonth:'',
-          selectedCongregation:'',
-          reportData:[],
-          searchQuery:'',
-          loading:false,
-          currentPage:1,
-          perPage:5
-        }
-      },
+</div>
 
-      computed: {
-        filteredData() {
-          const q=this.searchQuery.toLowerCase();
-          if(!q) return this.reportData;
-          return this.reportData.filter(i =>
-            (i['Literature Name']||'').toLowerCase().includes(q)
-          );
-        },
+<!-- SPINNER -->
+<div v-if="loading" class="spinner-overlay">
+  <div class="spinner"></div>
+</div>
 
-        totalQuantity() {
-          return this.filteredData.reduce((s,i)=>s+Number(i.Total||0),0);
-        },
+</div>
 
-        totalPages() {
-          return Math.ceil(this.filteredData.length / this.perPage) || 1;
-        },
+<script>
+const { createApp } = Vue;
 
-        paginatedData() {
-          const start=(this.currentPage-1)*this.perPage;
-          return this.filteredData.slice(start,start+this.perPage);
-        }
-      },
+createApp({
+  data(){
+    return {
+      authenticated:false,
+      password:'',
+      selectedMonth:'',
+      selectedCongregation:'',
+      reportData:[],
+      previousMonthData:[],
+      searchQuery:'',
+      loading:false,
+      currentPage:1,
+      perPage:10
+    }
+  },
 
-      methods: {
-        login() {
-          if(this.password==='congregation_123') this.authenticated=true;
-          else alert('Wrong password');
-        },
+  computed:{
+    filteredData(){
+      const q=this.searchQuery.toLowerCase();
+      if(!q) return this.reportData;
+      return this.reportData.filter(i =>
+        (i['Literature Name']||'').toLowerCase().includes(q)
+      );
+    },
 
-        logout() {
-          this.authenticated=false;
-          this.password='';
-        },
+    totalQuantity(){
+      return this.filteredData.reduce((s,i)=>s+Number(i.Total||0),0);
+    },
 
-        prevPage() {
-          if(this.currentPage>1) this.currentPage--;
-        },
+    totalPages(){
+      return Math.ceil(this.filteredData.length / this.perPage) || 1;
+    },
 
-        nextPage() {
-          if(this.currentPage<this.totalPages) this.currentPage++;
-        },
+    paginatedData(){
+      const start=(this.currentPage-1)*this.perPage;
+      return this.filteredData.slice(start,start+this.perPage);
+    },
 
-        async fetchReport() {
-          if(!this.selectedMonth||!this.selectedCongregation) return;
+    movementMap(){
+      const map={};
+      this.previousMonthData.forEach(i=>{
+        map[i['Literature Code']] = Number(i.Total||0);
+      });
+      return map;
+    }
+  },
 
-          this.loading=true;
-          this.currentPage=1;
+  methods:{
+    login(){
+      if(this.password==='congregation_123') this.authenticated=true;
+      else alert("Wrong password");
+    },
 
-          try {
-            const url=`https://script.google.com/macros/s/AKfycbzO3FEM3m7nDKgFIKafPRtLji92uh4KV2khpTW_WGzicUMI6_2UYhJ9nsGBfuemp8Rp/exec?month=${this.selectedMonth}&congregation=${this.selectedCongregation}`;
-            const res=await fetch(url);
-            this.reportData=await res.json();
-          } finally {
-            this.loading=false;
-          }
-        },
+    logout(){
+      this.authenticated=false;
+      this.password='';
+    },
 
-        exportCSV() {
-          let csv="Code,Name,Total\n";
-          this.reportData.forEach(i=>{
-            csv+=`${i['Literature Code']},${i['Literature Name']},${i['Total']}\n`;
-          });
+    prevPage(){ if(this.currentPage>1) this.currentPage--; },
+    nextPage(){ if(this.currentPage<this.totalPages) this.currentPage++; },
 
-          const blob=new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-          const a=document.createElement('a');
-          a.href=URL.createObjectURL(blob);
-          a.download='report.csv';
-          a.click();
-        }
+    getPreviousMonth(month){
+      const [y,m]=month.split('-');
+      const d=new Date(y,m-1);
+      d.setMonth(d.getMonth()-1);
+      return d.toISOString().slice(0,7);
+    },
+
+    getMovement(item){
+      if(this.selectedCongregation!=='East') return null;
+
+      const prev=this.movementMap[item['Literature Code']]||0;
+      const curr=Number(item.Total||0);
+      const diff=curr-prev;
+
+      if(diff>0) return {text:`+${diff} ↑`, class:'up'};
+      if(diff<0) return {text:`${diff} ↓`, class:'down'};
+      return {text:`0 →`, class:'neutral'};
+    },
+
+      getWarning(item){
+      // ✅ ONLY APPLY TO EAST
+      if(this.selectedCongregation !== 'East') return null;
+
+      const qty = Number(item.Total || 0);
+
+      if(qty <= 10){
+        return { text: "Low Stock ⚠️", class: "low" };
       }
-    }).mount('#app');
-  </script>
+
+      if(qty >= 1000){
+        return { text: "High Stock 📈", class: "high" };
+      }
+
+      return null;
+    },
+
+    async fetchReport(){
+      if(!this.selectedMonth||!this.selectedCongregation) return;
+
+      this.loading=true;
+      this.currentPage=1;
+
+      const base="https://script.google.com/macros/s/AKfycbzO3FEM3m7nDKgFIKafPRtLji92uh4KV2khpTW_WGzicUMI6_2UYhJ9nsGBfuemp8Rp/exec";
+
+      try{
+        const res=await fetch(`${base}?month=${this.selectedMonth}&congregation=${this.selectedCongregation}`);
+        this.reportData=await res.json();
+
+        if(this.selectedCongregation==='East'){
+          const prev=this.getPreviousMonth(this.selectedMonth);
+          const resPrev=await fetch(`${base}?month=${prev}&congregation=${this.selectedCongregation}`);
+          this.previousMonthData=await resPrev.json();
+        } else {
+          this.previousMonthData=[];
+        }
+
+      } finally {
+        this.loading=false;
+      }
+    }
+  }
+}).mount('#app');
+</script>
+
 </body>
 </html>
