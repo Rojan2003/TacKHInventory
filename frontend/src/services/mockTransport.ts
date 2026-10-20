@@ -13,7 +13,7 @@ const STORAGE_KEY = 'ecli.mock.db.v1'
 const sourceModules = import.meta.glob('../../../apps-script/src/*.js', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 
 export const MOCK_ACCOUNTS = [
-  { email: 'literaturecongregation@gmail.com', name: 'Initial Administrator', role: 'admin' },
+  { email: 'congregationliterature@gmail.com', name: 'Initial Administrator', role: 'admin' },
   { email: 'manager@example.com', name: 'Inventory Manager', role: 'inventory_manager' },
   { email: 'west@example.com', name: 'West Secretary', role: 'congregation_user' },
   { email: 'slc@example.com', name: 'SLC Secretary', role: 'congregation_user' },
@@ -45,7 +45,7 @@ function seedDemoData(rt: GasRuntime) {
     if (!res.success) throw new Error(`${action}: ${res.error?.message}`)
     return res.data
   }
-  const admin = call<{ token: string }>('auth.login', { idToken: 'mock:literaturecongregation@gmail.com:Initial Administrator' }).token
+  const admin = call<{ token: string }>('auth.login', { idToken: 'mock:congregationliterature@gmail.com:Initial Administrator' }).token
   const congs = call<{ code: string; congregationId: string }[]>('congregations.list', {}, admin)
   const byCode = Object.fromEntries(congs.map((c) => [c.code, c.congregationId]))
   call('users.create', { email: 'manager@example.com', name: 'Inventory Manager', role: 'inventory_manager' }, admin)

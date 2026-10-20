@@ -19,7 +19,7 @@ var CONFIG = {
 
   // The initial administrator. Seeded into AuthorizedUsers by setup() and, as a safety net,
   // on first login if the AuthorizedUsers sheet is empty. Identity is still verified by Google.
-  INITIAL_ADMIN_EMAIL: 'literaturecongregation@gmail.com',
+  INITIAL_ADMIN_EMAIL: 'congregationliterature@gmail.com',
 
   // The coordinating congregation that physically holds stock.
   COORDINATOR_CONGREGATION_CODE: 'EAST',

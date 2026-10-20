@@ -12,7 +12,7 @@ export function loadBackendSources(): string[] {
     .map((f) => readFileSync(join(APPS_SCRIPT_SRC, f), 'utf8'))
 }
 
-export const ADMIN_EMAIL = 'literaturecongregation@gmail.com'
+export const ADMIN_EMAIL = 'congregationliterature@gmail.com'
 
 let counter = 0
 export function rid(): string {
