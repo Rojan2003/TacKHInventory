@@ -1,0 +1,10 @@
+{
+  "scriptId": "REPLACE_WITH_YOUR_APPS_SCRIPT_PROJECT_ID",
+  "rootDir": "./",
+  "filePushOrder": [
+    "src/00_Config.js",
+    "src/01_Util.js",
+    "src/02_Sheets.js",
+    "src/03_Auth.js"
+  ]
+}
