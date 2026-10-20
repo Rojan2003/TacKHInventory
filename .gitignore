@@ -34,3 +34,6 @@ frontend/playwright-report/
 Thumbs.db
 *.log
 npm-debug.log*
+
+# Generated Apps Script bundle (run `node apps-script/build.mjs` locally to recreate)
+apps-script/Code.gs
