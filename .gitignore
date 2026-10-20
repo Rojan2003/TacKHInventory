@@ -1,0 +1,36 @@
+# ---- Secrets & environment (never commit) ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+service-account*.json
+client_secret*.json
+credentials*.json
+token*.json
+.clasprc.json
+apps-script/.clasp.json
+apps-script/.clasprc.json
+
+# ---- Dependencies & build output ----
+node_modules/
+frontend/dist/
+frontend/dist-ssr/
+*.local
+.vite/
+
+# ---- Test & coverage ----
+coverage/
+frontend/test-results/
+frontend/playwright-report/
+*.lcov
+
+# ---- Editor / OS ----
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
