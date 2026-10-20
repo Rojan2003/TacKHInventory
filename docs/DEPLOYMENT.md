@@ -6,7 +6,7 @@ test environment first (step 7) and only then point production at the real sprea
 
 ## 1. Google Cloud project and OAuth client (public client ID only)
 
-1. Sign in to https://console.cloud.google.com as `literaturecongregation@gmail.com` and create a project
+1. Sign in to https://console.cloud.google.com as `congregationliterature@gmail.com` and create a project
    (e.g. "East Literature Inventory").
 2. APIs & Services → OAuth consent screen: External, app name "East Congregation Literature Inventory",
    support email the admin account, scopes: none beyond the defaults (`openid`, `email`, `profile`).
@@ -31,7 +31,7 @@ owner, so end users never need direct access.
 
 ## 3. Apps Script backend
 
-1. Signed in as `literaturecongregation@gmail.com`, open https://script.google.com → New project, name it
+1. Signed in as `congregationliterature@gmail.com`, open https://script.google.com → New project, name it
    "East Literature Inventory API". (A standalone script is recommended so the spreadsheet can be changed via
    the `SPREADSHEET_ID` property; a container-bound script also works.)
 2. Add the files from `apps-script/src/` (same names, `.gs` or `.js`) and replace the manifest with
@@ -88,7 +88,7 @@ owner, so end users never need direct access.
 
 ## 5. Authorizing users
 
-The initial administrator is `literaturecongregation@gmail.com` (seeded by `setup()`). Sign in with that account,
+The initial administrator is `congregationliterature@gmail.com` (seeded by `setup()`). Sign in with that account,
 open **User Management** and authorize other Google accounts with a role and, for congregation users, a
 congregation. Role changes and deactivation take effect on the user's next request.
 

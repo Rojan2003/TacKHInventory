@@ -17,5 +17,5 @@ Deployment, Script Properties and permissions: see `../docs/DEPLOYMENT.md`.
 Tests: `cd ../frontend && npm test` (the backend is executed in a fake Apps Script runtime).
 
 Required OAuth scopes (manifest): `spreadsheets`, `script.external_request` (Google tokeninfo), `script.scriptapp`.
-Ownership: the script and its deployment should be owned by `literaturecongregation@gmail.com`, which must have
+Ownership: the script and its deployment should be owned by `congregationliterature@gmail.com`, which must have
 edit access to the spreadsheet. Nothing here stores or needs a client secret or service-account key.
