@@ -10,6 +10,7 @@ import { useReferenceStore } from '@/stores/reference'
 import { useToastStore } from '@/stores/toast'
 import { ROLE_LABELS, type AuditEntry, type Congregation, type LegacyImportReport, type ReconcileReport, type Role, type Setting, type User } from '@/types/api'
 import { formatDateTime, formatNumber } from '@/utils/format'
+import { analyzeEmail } from '@/utils/email'
 import PageHeader from '@/components/ui/PageHeader.vue'
 import FilterBar from '@/components/ui/FilterBar.vue'
 import DataTable, { type Column } from '@/components/ui/DataTable.vue'
@@ -38,15 +39,20 @@ const userColumns: Column[] = [
 const userDialog = reactive({ open: false, editing: null as User | null })
 const userForm = reactive({ email: '', name: '', role: 'read_only' as Role, congregationId: '', active: true })
 const userErrors = ref<Record<string, string>>({})
+// Live email hints for "Add user": cleaned value, a specific hint, an optional "Did you mean" suggestion (never auto-applied).
+const emailInfo = computed(() => analyzeEmail(userForm.email))
+const EMAIL_HELP = 'The person signs in with this Google account. Their identity is verified by Google; this list decides who is allowed in.'
+const emailHelp = computed(() => (userDialog.editing || !userForm.email ? EMAIL_HELP : emailInfo.value.hint || ''))
+function acceptEmailSuggestion() { if (emailInfo.value.suggestion) userForm.email = emailInfo.value.suggestion }
 function openUserCreate() { userDialog.editing = null; Object.assign(userForm, { email: '', name: '', role: 'read_only', congregationId: '', active: true }); userErrors.value = {}; userDialog.open = true }
 function openUserEdit(u: User) { userDialog.editing = u; Object.assign(userForm, { email: u.email, name: u.name, role: u.role, congregationId: u.congregationId, active: u.active }); userErrors.value = {}; userDialog.open = true }
 const saveUser = useMutation(async (rid: string) => {
   if (userDialog.editing) return api.call<User>('users.update', { userId: userDialog.editing.userId, name: userForm.name, role: userForm.role, congregationId: userForm.congregationId, active: userForm.active }, { requestId: rid })
-  return api.call<User>('users.create', { email: userForm.email, name: userForm.name, role: userForm.role, congregationId: userForm.congregationId }, { requestId: rid })
+  return api.call<User>('users.create', { email: emailInfo.value.value, name: userForm.name, role: userForm.role, congregationId: userForm.congregationId }, { requestId: rid })
 }, { successTitle: 'User saved' })
 async function submitUser() {
   const e: Record<string, string> = {}
-  if (!userDialog.editing && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userForm.email.trim())) e.email = 'Enter a valid Google account email.'
+  if (!userDialog.editing && !emailInfo.value.valid) e.email = emailInfo.value.hint || 'Enter a valid Google account email.'
   if (userForm.role === 'congregation_user' && !userForm.congregationId) e.congregationId = 'Congregation users must be linked to a congregation.'
   userErrors.value = e
   if (Object.keys(e).length) return
@@ -232,7 +238,11 @@ const reconcileIssues = computed(() => reconcileResult.value ? reconcileResult.v
     <!-- User dialog -->
     <Modal :open="userDialog.open" :title="userDialog.editing ? 'Edit authorized account' : 'Authorize a Google account'" @close="userDialog.open = false">
       <form id="user-form" class="space-y-4" @submit.prevent="submitUser">
-        <FormField label="Google account email" for="u-email" required :error="userErrors.email" help="The person signs in with this Google account. Their identity is verified by Google; this list decides who is allowed in."><input id="u-email" v-model="userForm.email" type="email" class="input" :disabled="!!userDialog.editing" maxlength="160" /></FormField>
+        <FormField label="Google account email" for="u-email" required :error="userErrors.email" :help="userErrors.email ? '' : emailHelp">
+          <input id="u-email" v-model="userForm.email" type="email" class="input" :disabled="!!userDialog.editing" maxlength="160" autocomplete="off" spellcheck="false" @input="userErrors.email = ''" />
+          <button v-if="!userDialog.editing && emailInfo.suggestion" type="button" class="mt-1.5 text-sm text-brand-700 hover:underline" data-testid="email-suggestion" @click="acceptEmailSuggestion">Did you mean <span class="font-medium">{{ emailInfo.suggestion }}</span>?</button>
+          <p v-if="!userDialog.editing && emailInfo.valid && !emailInfo.isGoogleDomain" class="mt-1.5 text-xs text-muted" data-testid="email-google-note">This person must sign in with a Google account that uses exactly this address.</p>
+        </FormField>
         <FormField label="Display name" for="u-name"><input id="u-name" v-model="userForm.name" class="input" maxlength="120" /></FormField>
         <FormField label="Role" for="u-role" required><select id="u-role" v-model="userForm.role" class="input"><option v-for="(label, r) in ROLE_LABELS" :key="r" :value="r">{{ label }}</option></select></FormField>
         <FormField label="Congregation" for="u-cong" :required="userForm.role === 'congregation_user'" :error="userErrors.congregationId" help="Required for congregation users; scopes what they can see and request."><select id="u-cong" v-model="userForm.congregationId" class="input"><option value="">None</option><option v-for="c in reference.memberCongregations" :key="c.congregationId" :value="c.congregationId">{{ c.name }}</option></select></FormField>
