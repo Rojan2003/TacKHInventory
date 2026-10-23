@@ -3,7 +3,8 @@ import { computed, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { CheckCircle2, XCircle, Ban, Pencil, Send, Truck } from 'lucide-vue-next'
 import { api } from '@/services/api'
-import { useAsync, useMutation } from '@/composables/useAsync'
+import { useMutation } from '@/composables/useAsync'
+import { useApiQuery } from '@/composables/useApiQuery'
 import { useConfirm } from '@/composables/useConfirm'
 import { useAuthStore } from '@/stores/auth'
 import { useReferenceStore } from '@/stores/reference'
@@ -22,7 +23,7 @@ const auth = useAuthStore()
 const reference = useReferenceStore()
 const { confirm } = useConfirm()
 const requestId = computed(() => String(route.params.requestId))
-const { data: r, loading, error, reload } = useAsync<LiteratureRequest>(() => api.call('requests.get', { requestId: requestId.value }))
+const { data: r, loading, error, reload, setData } = useApiQuery<LiteratureRequest>('requests.get', () => ({ requestId: requestId.value }))
 void reference.loadSettings()
 
 const canDecide = computed(() => auth.can('requests.decide'))
@@ -40,17 +41,17 @@ const rejectMutation = useMutation((rid: string, decisionNotes: string) => api.c
 const cancelMutation = useMutation((rid: string, reason: string) => api.call<LiteratureRequest>('requests.cancel', { requestId: requestId.value, reason }, { requestId: rid }), { successTitle: 'Request cancelled' })
 const approveMutation = useMutation((rid: string) => api.call<LiteratureRequest>('requests.approve', { requestId: requestId.value, decisionNotes: approve.notes, items: approve.lines.map((l) => ({ requestItemId: l.requestItemId, approvedQty: Number(l.approvedQty) || 0 })) }, { requestId: rid }), { successTitle: 'Request approved' })
 
-async function onSubmit() { const res = await submitMutation.mutate(); if (res) r.value = res }
+async function onSubmit() { const res = await submitMutation.mutate(); if (res) setData(res) }
 async function onReject() {
   const c = await confirm({ title: `Reject ${r.value?.requestNumber}?`, message: 'The requesting congregation will see the reason you give.', confirmText: 'Reject request', danger: true, inputLabel: 'Reason', requireInput: true })
   if (!c.confirmed) return
-  const res = await rejectMutation.mutate(c.input); if (res) r.value = res
+  const res = await rejectMutation.mutate(c.input); if (res) setData(res)
 }
 async function onCancel() {
   const releases = r.value && ['Approved', 'Partially Fulfilled'].includes(r.value.status) && reference.reserveOnApproval ? ' Reserved stock for the remaining quantity will be released.' : ''
   const c = await confirm({ title: `Cancel ${r.value?.requestNumber}?`, message: 'Cancelled requests cannot be reopened.' + releases, confirmText: 'Cancel request', danger: true, inputLabel: 'Reason (optional)' })
   if (!c.confirmed) return
-  const res = await cancelMutation.mutate(c.input); if (res) { r.value = res; reference.invalidate(['items']) }
+  const res = await cancelMutation.mutate(c.input); if (res) { setData(res); reference.invalidate(['items']) }
 }
 
 /* ---- Approve dialog ---- */
@@ -76,7 +77,7 @@ async function submitApprove() {
   approveErrors.value = e
   if (Object.keys(e).length) return
   const res = await approveMutation.mutate()
-  if (res) { r.value = res; approve.open = false; reference.invalidate(['items']) }
+  if (res) { setData(res); approve.open = false; reference.invalidate(['items']) }
 }
 </script>
 

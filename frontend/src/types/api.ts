@@ -324,3 +324,11 @@ export interface LegacyImportReport {
   unmatched: { sku: string; name: string; quantity: number }[]
   created: string[]
 }
+
+/** app.bootstrap: everything the shell needs after sign-in, in one round trip. */
+export interface BootstrapResponse {
+  user: User
+  congregations: Congregation[]
+  settings: Setting[]
+  build: string
+}

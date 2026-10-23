@@ -73,6 +73,15 @@ function usersUpdate(params, ctx) {
   return publicUser(saved, congregationId ? table(SHEETS.CONGREGATIONS).findById(congregationId) : null);
 }
 
+/** Drops every cached worksheet read (bumps the data version). Use after editing the spreadsheet by hand. */
+function adminClearCache(params, ctx) {
+  requirePermission(ctx.user, 'admin.reconcile');
+  var version = bumpDataVersion();
+  invalidateSettingsCache();
+  writeAudit(ctx.user.email, 'admin.clearCache', 'Cache', version, 'Cleared the backend read cache', ctx.requestId, null);
+  return { dataVersion: version, cacheEnabled: cacheEnabled(), ttlSeconds: CACHE_ROWS_TTL_SECONDS };
+}
+
 /* ---------- Settings ---------- */
 
 function settingsGet(params, ctx) {

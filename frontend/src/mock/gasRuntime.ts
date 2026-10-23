@@ -14,6 +14,8 @@ import { hmacSha256, sha256, utf8Decode, utf8Encode } from './sha256'
 export interface GasRuntimeOptions {
   sources: string[]
   spreadsheetId?: string
+  /** Extra Script Properties present before setup() runs (e.g. CACHE_ENABLED). */
+  initialProperties?: Record<string, string>
   clientId?: string
   /** Pre-populated worksheets (header row first), e.g. the legacy sheets. */
   initialSheets?: Record<string, unknown[][]>
@@ -185,7 +187,7 @@ export function createGasRuntime(options: GasRuntimeOptions): GasRuntime {
   const sheets = new Map<string, FakeSheet>()
   Object.entries(options.initialSheets || {}).forEach(([name, rows]) => sheets.set(name, new FakeSheet(name, rows)))
   const spreadsheet = new FakeSpreadsheet(sheets, 'Inventory and Distribution System (mock)')
-  const properties = new Map<string, string>([['GOOGLE_CLIENT_ID', clientId], ['SPREADSHEET_ID', spreadsheetId]])
+  const properties = new Map<string, string>([['GOOGLE_CLIENT_ID', clientId], ['SPREADSHEET_ID', spreadsheetId], ...Object.entries(options.initialProperties || {})])
   const cache = new Map<string, string>()
   const resolver = options.tokenInfoResolver || defaultTokenInfoResolver(clientId)
 

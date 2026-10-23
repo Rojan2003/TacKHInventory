@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import { Plus, Pencil, UserCheck, UserX, Wrench, Database } from 'lucide-vue-next'
+import { Plus, Pencil, UserCheck, UserX, Wrench, Database, Eraser } from 'lucide-vue-next'
 import { api, describeError } from '@/services/api'
 import { useMutation } from '@/composables/useAsync'
 import { usePagedList } from '@/composables/usePagedList'
@@ -116,6 +116,9 @@ async function runImport(apply: boolean) {
   const res = await legacyImport.mutate(apply)
   if (res) { importResult.value = res; if (apply) { toast.success('Opening balances imported'); reference.invalidate(['items']) } }
 }
+const clearCache = useMutation((rid: string) => api.call<{ dataVersion: string; cacheEnabled: boolean; ttlSeconds: number }>('admin.clearCache', {}, { requestId: rid }), { successTitle: 'Backend cache cleared' })
+const cacheResult = ref<{ dataVersion: string; cacheEnabled: boolean; ttlSeconds: number } | null>(null)
+async function runClearCache() { const res = await clearCache.mutate(); if (res) cacheResult.value = res }
 const reconcileIssues = computed(() => reconcileResult.value ? reconcileResult.value.balanceFixes.length + reconcileResult.value.fulfilledFixes.length + reconcileResult.value.processingDistributions.length : 0)
 </script>
 
@@ -203,6 +206,12 @@ const reconcileIssues = computed(() => reconcileResult.value ? reconcileResult.v
           <ul v-if="reconcileResult.fulfilledFixes.length" class="list-disc pl-5 text-xs"><li v-for="f in reconcileResult.fulfilledFixes" :key="f.requestItemId">Request line {{ f.requestItemId }}: fulfilled {{ f.cached }} → {{ f.computed }}</li></ul>
           <ul v-if="reconcileResult.processingDistributions.length" class="list-disc pl-5 text-xs"><li v-for="f in reconcileResult.processingDistributions" :key="f.distributionId">Distribution {{ f.reference }}: {{ f.action }} (ledger written: {{ f.ledgerWritten ? 'yes' : 'no' }})</li></ul>
         </div>
+      </section>
+      <section class="card p-4 sm:p-5">
+        <h2 class="font-semibold text-ink flex items-center gap-2"><Eraser class="size-4 text-brand-600" /> Clear backend cache</h2>
+        <p class="text-sm text-muted mt-1">The backend keeps worksheet reads for up to 2 minutes and drops them automatically after every change made through the app. If you edit the spreadsheet by hand and want the app to show it right away, clear the cache here; the app itself refreshes its own cached pages too.</p>
+        <div class="mt-3 flex gap-2"><AppButton variant="outline" :loading="clearCache.pending.value" @click="runClearCache">Clear cache</AppButton></div>
+        <p v-if="cacheResult" class="mt-3 text-xs text-muted">Cleared. Backend caching is {{ cacheResult.cacheEnabled ? `on (entries live up to ${cacheResult.ttlSeconds} s)` : 'switched off by the CACHE_ENABLED property' }}.</p>
       </section>
       <section class="card p-4 sm:p-5">
         <h2 class="font-semibold text-ink flex items-center gap-2"><Database class="size-4 text-brand-600" /> Import legacy opening balances</h2>

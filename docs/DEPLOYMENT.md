@@ -48,6 +48,7 @@ owner, so end users never need direct access.
    | `GOOGLE_CLIENT_ID` | the client ID from step 1 |
    | `SPREADSHEET_ID` | (optional) overrides the default production ID; use a copy for testing |
    | `ENVIRONMENT` | `test` or `production` (informational) |
+   | `CACHE_ENABLED` | optional kill switch for the backend read cache; absent or `true` = on, `false` = off (see "Read cache" below) |
 4. In the editor select `setup` and Run. Grant the requested permissions (Sheets, external requests).
    `setup()` creates the new worksheets and columns, generates `SESSION_SECRET`, seeds the five
    congregations, default settings and the initial administrator. Run `healthCheck` to verify.
@@ -66,6 +67,17 @@ owner, so end users never need direct access.
    ```
 7. Every code change needs **Deploy → Manage deployments → Edit → New version** (or `clasp deploy -i <id>`)
    so the `/exec` URL stays stable.
+
+### Read cache and manual spreadsheet edits
+
+The backend keeps raw worksheet rows in Apps Script's CacheService for up to **120 seconds**. Every change made
+through the app invalidates the whole cache at once (a global data version is bumped even when a change fails
+halfway), reads performed while a change is in progress always go to the sheet, and per-account, audit and
+idempotency sheets are never cached. The consequence for hand edits: **if you change a cell directly in Google
+Sheets, the app shows it within two minutes**, or immediately after **User Management → Maintenance → Clear
+cache**. Set the `CACHE_ENABLED` Script Property to `false` to switch the cache off entirely (slower, but every
+read hits the sheet). The browser also keeps the pages you have visited for the session and refreshes them in the
+background; sign out or reload to drop them.
 
 ## 4. GitHub repository and Pages
 

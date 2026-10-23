@@ -19,7 +19,7 @@ npm run secrets:scan  # credential pattern scan
 
 | # | Criterion | Automated test | Status |
 |---|-----------|----------------|--------|
-| 1 | Authorized Google accounts can sign in | backend/auth: seeds admin, login via verified identity | pass |
+| 1 | Authorized Google accounts can sign in | backend/auth: seeds admin, login via verified identity; app.bootstrap returns user + congregations + settings | pass |
 | 2 | Unauthorized accounts cannot access data | backend/auth: unknown email, deactivated user, missing token | pass |
 | 3 | Server-side role checks cannot be bypassed | backend/auth: body-supplied role ignored; 16-case matrix | pass |
 | 4 | Confirmed deliveries increase stock exactly once | backend/inventory: confirm twice with new request IDs | pass |
@@ -37,6 +37,8 @@ npm run secrets:scan  # credential pattern scan
 | 16 | Frontend build succeeds | `npm run build`, CI workflow | pass |
 | 17 | No private credentials in the build | `scan-secrets.mjs dist` | pass (0 findings) |
 | 18 | Existing records/formulas intact | backend never writes legacy sheets; test asserts byte-identical legacy data after import | pass |
+| 19 | Backend read cache is safe | backend/cache: hit/miss, in-lock bypass, finally-bump on failed mutation, evicted version, kill switch, size limit, excluded sheets, clearCache, every mutation family invalidates | pass |
+| 20 | Browser cache never leaks between users | unit/queryCache: persisted families only, per-user storage, cleared on logout/401 | pass |
 
 Latest local results are recorded in the final project report; CI re-runs `npm test` and the build on every push.
 

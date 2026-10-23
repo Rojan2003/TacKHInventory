@@ -14,6 +14,7 @@ var ACTIONS = {
   'auth.login':                   { handler: authLogin, isPublic: true, mutation: false },
   'auth.me':                      { handler: authMe },
   'auth.logout':                  { handler: authLogout },
+  'app.bootstrap':                { handler: appBootstrap },
 
   'dashboard.summary':            { handler: dashboardSummary },
 
@@ -59,12 +60,23 @@ var ACTIONS = {
   'settings.get':                 { handler: settingsGet },
   'settings.update':              { handler: settingsUpdate, mutation: true },
   'admin.reconcile':              { handler: adminReconcile, mutation: true },
+  'admin.clearCache':             { handler: adminClearCache },
   'admin.importLegacyOpeningBalances': { handler: adminImportLegacyOpeningBalances, mutation: true }
 };
 
 function healthAction() {
   // BUILD_ID is injected by build.mjs into Code.gs; sources pushed with clasp (or run in tests) report "dev".
   return { service: CONFIG.APP_NAME, version: CONFIG.APP_VERSION, build: typeof BUILD_ID === 'string' ? BUILD_ID : 'dev', time: nowIso() };
+}
+
+/** One call for everything the app needs after sign-in: the current user, congregations and settings. */
+function appBootstrap(params, ctx) {
+  return {
+    user: authMe(params, ctx),
+    congregations: listCongregations(hasPermission(ctx.user, 'congregations.manage')),
+    settings: settingsGet(params, ctx),
+    build: typeof BUILD_ID === 'string' ? BUILD_ID : 'dev'
+  };
 }
 
 /** Core dispatcher. Pure function of the request body; used by doPost and by the test harness. */

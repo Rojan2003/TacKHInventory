@@ -1,11 +1,12 @@
 /**
  * Small, frequently reused reference data (congregations, settings, active items for pickers).
- * Cached per session and invalidated after mutations that affect it.
+ * Filled in one round trip by app.bootstrap at start-up (see the auth store), cached per session and
+ * invalidated after mutations that affect it.
  */
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { api } from '@/services/api'
-import type { Congregation, Item, ItemsPage, Setting } from '@/types/api'
+import type { BootstrapResponse, Congregation, Item, ItemsPage, Setting } from '@/types/api'
 
 export const useReferenceStore = defineStore('reference', () => {
   const congregations = ref<Congregation[]>([])
@@ -17,6 +18,14 @@ export const useReferenceStore = defineStore('reference', () => {
   const memberCongregations = computed(() => congregations.value.filter((c) => c.type !== 'coordinator' && c.active))
   const reserveOnApproval = computed(() => settings.value.reserveOnApproval !== 'false')
   const allowAdHocDistribution = computed(() => settings.value.allowAdHocDistribution === 'true')
+
+  /** Takes the congregations and settings delivered by app.bootstrap, saving two separate calls. */
+  function applyBootstrap(boot: BootstrapResponse) {
+    congregations.value = boot.congregations
+    settings.value = Object.fromEntries(boot.settings.map((s) => [s.key, s.value]))
+    loadedAt.value.congregations = Date.now()
+    loadedAt.value.settings = Date.now()
+  }
 
   async function loadCongregations(force = false) {
     if (!force && loadedAt.value.congregations && Date.now() - loadedAt.value.congregations < 5 * 60_000) return congregations.value
@@ -57,5 +66,5 @@ export const useReferenceStore = defineStore('reference', () => {
     invalidate()
   }
 
-  return { congregations, settings, items, coordinator, memberCongregations, reserveOnApproval, allowAdHocDistribution, loadCongregations, loadSettings, loadItems, congregationName, invalidate, reset }
+  return { congregations, settings, items, coordinator, memberCongregations, reserveOnApproval, allowAdHocDistribution, applyBootstrap, loadCongregations, loadSettings, loadItems, congregationName, invalidate, reset }
 })

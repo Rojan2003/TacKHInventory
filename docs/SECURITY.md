@@ -30,6 +30,19 @@ generic message.
 - CSV exports neutralise cells starting with `= + - @` to prevent formula injection when opened in a spreadsheet.
 - Input is validated server-side (types, ranges, lengths, enumerations, duplicate lines).
 
+## Caching
+
+- **Backend**: raw worksheet rows are cached in CacheService for 120 s under a key that embeds a global data
+  version. Any write bumps the version (in a `finally` block, so a failed mutation still invalidates); a missing or
+  evicted version key yields a brand-new version, never an old one. Reads inside the script lock bypass the cache
+  and never populate it, so stock checks, approvals, releases and reconcile always see the sheet. `AuthorizedUsers`,
+  `AuditLogs` and `IdempotencyKeys` are never cached; only raw rows are cached, never per-user responses. Values
+  over 90 KB are not cached. `CACHE_ENABLED=false` disables it; `admin.clearCache` (administrators) bumps the version.
+- **Browser**: TanStack Query keeps fetched pages in memory with stale-while-revalidate (30 s) and invalidates
+  related families after every successful mutation. Only items, stock, dashboard, congregations, deliveries,
+  requests and distributions are persisted to `sessionStorage`, keyed by user id; users, audit and settings never
+  are. Logout, a 401 and session expiry wipe memory and storage.
+
 ## What is public by design
 
 - The OAuth client ID and the Apps Script `/exec` URL (compiled into the GitHub Pages bundle).

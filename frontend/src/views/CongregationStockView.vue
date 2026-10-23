@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, watch } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Download } from 'lucide-vue-next'
-import { api } from '@/services/api'
-import { useAsync } from '@/composables/useAsync'
+import { useApiQuery } from '@/composables/useApiQuery'
 import { useAuthStore } from '@/stores/auth'
 import { useReferenceStore } from '@/stores/reference'
 import type { StockOverview } from '@/types/api'
@@ -22,14 +21,14 @@ const router = useRouter()
 const seesAll = computed(() => auth.can('stock.view.all'))
 const filters = reactive({ congregationId: auth.user?.congregationId || '', from: '', to: '' })
 
-const { data, loading, error, reload } = useAsync<StockOverview>(() => api.call('stock.overview', { congregationId: filters.congregationId || undefined, from: filters.from || undefined, to: filters.to || undefined }), { immediate: false })
+const ready = ref(!seesAll.value)
+const { data, loading, error, reload } = useApiQuery<StockOverview>('stock.overview', () => ({ congregationId: filters.congregationId, from: filters.from, to: filters.to }), { enabled: ready })
 
 onMounted(async () => {
   await reference.loadCongregations()
   if (seesAll.value && !filters.congregationId) filters.congregationId = reference.coordinator?.congregationId || ''
-  void reload()
+  ready.value = true
 })
-watch(filters, () => void reload())
 
 const coordinatorColumns: Column[] = [
   { key: 'sku', label: 'Code' }, { key: 'name', label: 'Literature' },

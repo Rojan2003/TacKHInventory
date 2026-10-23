@@ -138,7 +138,8 @@ test('inventory manager: pending delivery does not change stock, confirmation do
   await page.getByPlaceholder(/Search code/).fill('LIT003')
   await page.getByText('Insight on the Scriptures').filter({ visible: true }).first().click()
   await expect(page.getByText('Delivery in').filter({ visible: true }).first()).toBeVisible()
-  expect(await statValue(page, 'Physical')).toBe(33)
+  // The cached item page paints first (26) and refreshes in the background after the confirmation.
+  await expect.poll(() => statValue(page, 'Physical'), { timeout: 10_000 }).toBe(33)
   await logout(page)
 })
 
@@ -241,5 +242,22 @@ test('administrator: user management and reconciliation', async ({ page }) => {
   await page.getByRole('button', { name: 'Dry run' }).first().click()
   await expect(page.getByText('Everything is consistent.')).toBeVisible()
   await noHorizontalOverflow(page)
+  await logout(page)
+})
+
+test('cached pages paint instantly on a second visit and refresh in the background', async ({ page }) => {
+  await loginAs(page, 'Initial Administrator')
+  await expect(page.getByText('Physical stock', { exact: true })).toBeVisible()
+  await expect(page.locator('.animate-pulse')).toHaveCount(0)
+  await nav(page, 'Literature Inventory')
+  await expect(page.getByText('LIT001').filter({ visible: true }).first()).toBeVisible()
+  await nav(page, 'Dashboard')
+  // Second visit: the cached summary is rendered at once; no skeleton placeholder is ever shown.
+  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
+  expect(await page.locator('.animate-pulse').count()).toBe(0)
+  await expect(page.getByText('Physical stock', { exact: true })).toBeVisible()
+  await nav(page, 'Literature Inventory')
+  expect(await page.locator('.animate-pulse').count()).toBe(0)
+  await expect(page.getByText('LIT001').filter({ visible: true }).first()).toBeVisible()
   await logout(page)
 })
