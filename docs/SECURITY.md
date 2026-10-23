@@ -9,7 +9,7 @@
 | Allowlist | The verified email must exist and be active in the `AuthorizedUsers` worksheet. The initial administrator is seeded server-side by `setup()` (and, as a fallback, on the first login of that exact address when the sheet is empty). |
 | Session | The backend issues `base64url(payload).base64url(HMAC-SHA256(payload, SESSION_SECRET))` with an 8-hour expiry. `SESSION_SECRET` lives only in Script Properties. Signature comparison is constant-time. The token is stored in `localStorage` on the client; `rotateSessionSecret()` invalidates every session. |
 | Per-request | Every protected action re-verifies the token and reloads the user, so deactivation or role changes are effective immediately (60 s cache). The browser never supplies its email or role. |
-| Roles | `admin`, `inventory_manager`, `congregation_user`, `read_only`. The permission matrix is in `apps-script/src/00_Config.js` and is enforced in every handler. Congregation users are additionally scoped to their own congregation for requests, distributions, stock views and reports. Frontend route guards and hidden buttons are UX only. |
+| Roles | `admin`, `literature_servant`, `congregation_user`, `read_only`. The permission matrix is in `apps-script/src/00_Config.js` and is enforced in every handler. Congregation users are additionally scoped to their own congregation for requests, distributions, stock views and reports. Frontend route guards and hidden buttons are UX only. |
 | Admin safety | A user cannot deactivate themself or drop their own admin role; the last active administrator cannot be removed. |
 
 ## Transport

@@ -17,11 +17,11 @@ export interface RequestEnvelope {
   params?: Record<string, unknown>
 }
 
-export type Role = 'admin' | 'inventory_manager' | 'congregation_user' | 'read_only'
+export type Role = 'admin' | 'literature_servant' | 'congregation_user' | 'read_only'
 
 export const ROLE_LABELS: Record<Role, string> = {
   admin: 'Administrator',
-  inventory_manager: 'Inventory Manager',
+  literature_servant: 'Congregation Literature Servant',
   congregation_user: 'Congregation User',
   read_only: 'Read-Only User',
 }

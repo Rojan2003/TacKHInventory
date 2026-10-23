@@ -75,7 +75,8 @@ describe('authentication', () => {
     const get = h.rt.exports.doGet({}) as { getContent: () => string }
     const body = JSON.parse(get.getContent())
     expect(body.success).toBe(true)
-    expect(Object.keys(body.data)).toEqual(['service', 'version', 'time'])
+    expect(Object.keys(body.data)).toEqual(['service', 'version', 'build', 'time'])
+    expect(body.data.build).toBe('dev') // BUILD_ID is only injected into the Code.gs bundle
   })
 })
 

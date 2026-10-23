@@ -86,10 +86,6 @@ function print() { window.print() }
           <tfoot><tr class="border-t border-gray-200 font-semibold"><td colspan="2" class="py-2">Total</td><td class="py-2 text-right tabular-nums">{{ formatNumber(d.totalQty) }}</td></tr></tfoot>
         </table>
         <p v-if="d.notes" class="mt-4 text-sm text-muted">Notes: {{ d.notes }}</p>
-        <div class="mt-8 grid grid-cols-2 gap-8 text-sm">
-          <div><div class="border-t border-gray-400 pt-1">Released by (signature)</div></div>
-          <div><div class="border-t border-gray-400 pt-1">Received by (signature / date)</div></div>
-        </div>
       </section>
     </template>
   </div>

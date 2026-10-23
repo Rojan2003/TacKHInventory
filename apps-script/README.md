@@ -11,7 +11,7 @@ Plain Apps Script (V8), no bundler. Files share one global scope; names are pref
 | `04_Audit.js` | audit log, idempotency store, `runMutation` |
 | `05_Congregations.js` … `14_Users.js` | domain modules (catalog, ledger/balances/reconcile, deliveries, requests, distributions, stock overview, reports, dashboard, users/settings) |
 | `20_Api.js` | `doPost`/`doGet`, action registry, `handleRequest(body)` |
-| `99_Setup.js` | `setup()`, `healthCheck()`, `rotateSessionSecret()`, legacy opening-balance import |
+| `99_Setup.js` | `setup()`, `healthCheck()`, `authSelfTest()` (confirms the external-request authorization), `rotateSessionSecret()`, legacy opening-balance import |
 
 Deployment, Script Properties and permissions: see `../docs/DEPLOYMENT.md`.
 Tests: `cd ../frontend && npm test` (the backend is executed in a fake Apps Script runtime).

@@ -99,6 +99,13 @@ congregation. Role changes and deactivation take effect on the user's next reque
 2. Sign in with an account that is **not** authorized → "This account is not authorized".
 3. Sign in with the administrator → dashboard loads; AuditLogs gains an `auth.login` row.
 4. In the Apps Script editor, Executions shows the calls; errors there never reach the browser as stack traces.
+5. "Google identity verification is temporarily unavailable." or "The backend is not authorized to contact
+   Google" on the sign-in page means `UrlFetchApp` threw inside the deployment: the script was never granted
+   `script.external_request` (typical when `setup()` was never run, or after pasting new code into a project that
+   was authorized earlier). Fix: in the editor select `authSelfTest` → Run → grant access when prompted. It logs
+   `tokeninfoStatus: 400` when the call goes through. Then Deploy → Manage deployments → Edit → New version.
+6. `GET /exec` returns `build` (date plus a short hash, written by `node build.mjs` into `Code.gs`). Compare it with
+   the header of the bundle you pasted to confirm which code is live; sources pushed with clasp report `dev`.
 
 ## 7. Test environment
 

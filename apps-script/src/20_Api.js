@@ -63,7 +63,8 @@ var ACTIONS = {
 };
 
 function healthAction() {
-  return { service: CONFIG.APP_NAME, version: CONFIG.APP_VERSION, time: nowIso() };
+  // BUILD_ID is injected by build.mjs into Code.gs; sources pushed with clasp (or run in tests) report "dev".
+  return { service: CONFIG.APP_NAME, version: CONFIG.APP_VERSION, build: typeof BUILD_ID === 'string' ? BUILD_ID : 'dev', time: nowIso() };
 }
 
 /** Core dispatcher. Pure function of the request body; used by doPost and by the test harness. */

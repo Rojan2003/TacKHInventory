@@ -57,7 +57,7 @@ export function seedScenario(h: Harness) {
     h.ok<any>('items.create', { sku: 'LIT002', name: 'Watchtower', unit: 'pcs', minStock: 5, openingQty: 50 }, h.admin),
     h.ok<any>('items.create', { sku: 'LIT003', name: 'Insight', unit: 'pcs', minStock: 5 }, h.admin),
   ]
-  h.ok('users.create', { email: 'manager@example.com', name: 'Manager', role: 'inventory_manager' }, h.admin)
+  h.ok('users.create', { email: 'manager@example.com', name: 'Manager', role: 'literature_servant' }, h.admin)
   h.ok('users.create', { email: 'west@example.com', name: 'West User', role: 'congregation_user', congregationId: byCode.WEST.congregationId }, h.admin)
   h.ok('users.create', { email: 'slc@example.com', name: 'SLC User', role: 'congregation_user', congregationId: byCode.SLC.congregationId }, h.admin)
   h.ok('users.create', { email: 'viewer@example.com', name: 'Viewer', role: 'read_only' }, h.admin)

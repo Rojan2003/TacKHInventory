@@ -108,7 +108,7 @@ test('administrator: dashboard, inventory and item creation', async ({ page }) =
 })
 
 test('inventory manager: pending delivery does not change stock, confirmation does (once)', async ({ page }) => {
-  await loginAs(page, 'Inventory Manager')
+  await loginAs(page, 'Congregation Literature Servant')
   await nav(page, 'Incoming Deliveries')
   await page.getByRole('link', { name: 'Record delivery' }).click()
   await page.getByLabel('Supplier name').fill('E2E Depot')
@@ -144,7 +144,7 @@ test('inventory manager: pending delivery does not change stock, confirmation do
 
 test('congregation request → approval → release → receipt → confirmation', async ({ page }) => {
   // West secretary submits a request
-  await loginAs(page, 'West Secretary')
+  await loginAs(page, 'West Literature Overseer')
   await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
   await nav(page, 'Congregation Requests')
   await page.getByRole('link', { name: 'New request' }).click()
@@ -159,7 +159,7 @@ test('congregation request → approval → release → receipt → confirmation
   await logout(page)
 
   // Manager approves and releases
-  await loginAs(page, 'Inventory Manager')
+  await loginAs(page, 'Congregation Literature Servant')
   await nav(page, 'Congregation Requests')
   await page.getByText(requestNumber).filter({ visible: true }).first().click()
   await page.getByRole('button', { name: 'Approve…' }).click()
@@ -187,12 +187,12 @@ test('congregation request → approval → release → receipt → confirmation
   await logout(page)
 
   // West confirms receipt; SLC cannot see it
-  await loginAs(page, 'SLC Secretary')
+  await loginAs(page, 'SLC Literature Overseer')
   await nav(page, 'Distributions')
   await expect(page.getByText(reference)).toHaveCount(0)
   await logout(page)
 
-  await loginAs(page, 'West Secretary')
+  await loginAs(page, 'West Literature Overseer')
   await nav(page, 'Distributions')
   await page.getByText(reference).filter({ visible: true }).first().click()
   await page.getByRole('button', { name: 'Confirm receipt' }).click()
