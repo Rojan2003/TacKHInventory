@@ -6,7 +6,7 @@ import { confirmState, settleConfirm } from '@/composables/useConfirm'
 </script>
 
 <template>
-  <Modal :open="confirmState.open" :title="confirmState.title" size="sm" @close="settleConfirm(false)">
+  <Modal above :open="confirmState.open" :title="confirmState.title" size="sm" @close="settleConfirm(false)">
     <div class="flex gap-3">
       <div v-if="confirmState.danger" class="shrink-0 rounded-full bg-red-50 p-2 text-red-600"><AlertTriangle class="size-5" /></div>
       <div class="flex-1 space-y-3">

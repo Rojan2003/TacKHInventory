@@ -65,6 +65,7 @@ async function onCancel() {
           { label: 'Delivery date', value: formatDate(d.deliveryDate) },
           { label: 'Source', value: `${d.sourceName} (${d.sourceType})` },
           { label: 'Received by', value: d.receivedBy },
+          { label: 'Packing list', value: d.packingListNumber || '—' },
           { label: 'Recorded', value: `${formatDateTime(d.createdAt)} by ${d.createdBy}` },
           { label: 'Confirmed', value: d.confirmedAt ? `${formatDateTime(d.confirmedAt)} by ${d.confirmedBy}` : (d.status === 'Pending' ? 'Not yet (stock unchanged)' : '—') },
           { label: 'Notes', value: d.notes },

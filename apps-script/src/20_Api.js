@@ -35,6 +35,7 @@ var ACTIONS = {
   'deliveries.update':            { handler: deliveriesUpdate, mutation: true },
   'deliveries.confirm':           { handler: deliveriesConfirm, mutation: true },
   'deliveries.cancel':            { handler: deliveriesCancel, mutation: true },
+  'deliveries.importPackingLists': { handler: deliveriesImportPackingLists }, // dry run is a read; apply runs runMutation itself
 
   'requests.list':                { handler: requestsList },
   'requests.get':                 { handler: requestsGet },

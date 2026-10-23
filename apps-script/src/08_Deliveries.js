@@ -16,7 +16,7 @@ function publicDelivery(d, congs, items, withItems) {
   var out = {
     deliveryId: d.deliveryId, reference: d.reference, deliveryDate: toIsoDate(d.deliveryDate), sourceType: d.sourceType,
     sourceCongregationId: d.sourceCongregationId || '', sourceName: d.sourceType === 'congregation' && src ? src.name : (d.sourceName || ''),
-    receivedBy: d.receivedBy || '', status: d.status, notes: d.notes || '', createdAt: d.createdAt, createdBy: d.createdBy,
+    receivedBy: d.receivedBy || '', status: d.status, notes: d.notes || '', packingListNumber: d.packingListNumber || '', createdAt: d.createdAt, createdBy: d.createdBy,
     confirmedAt: d.confirmedAt || '', confirmedBy: d.confirmedBy || '', updatedAt: d.updatedAt || ''
   };
   var lines = deliveryItemsFor(d.deliveryId, items);
@@ -36,7 +36,7 @@ function deliveriesList(params, ctx) {
     if ((params.from || params.to) && !inDateRange(d.deliveryDate, params.from, params.to)) return false;
     return true;
   }).map(function (d) { return publicDelivery(d, congs, items, false); })
-    .filter(function (d) { return textMatches(d, ['reference', 'sourceName', 'receivedBy', 'notes', 'status'], params.query); });
+    .filter(function (d) { return textMatches(d, ['reference', 'sourceName', 'receivedBy', 'notes', 'status', 'packingListNumber'], params.query); });
   rows = sortRows(rows, params.sortBy || 'deliveryDate', params.sortDir || 'desc');
   return paginate(rows, params);
 }
@@ -65,6 +65,15 @@ function validateDeliveryLines(lines) {
     seen[itemId] = true;
     return { itemId: itemId, quantity: requirePositiveInt(l.quantity, 'Quantity for ' + items[itemId].sku) };
   });
+}
+
+/** Optional packing list number; must be unique across all deliveries (any status). */
+function validatePackingListNumber(value, exceptDeliveryId) {
+  var n = optionalString({ v: value }, 'v', 40);
+  if (!n) return '';
+  var clash = table(SHEETS.DELIVERIES).read().filter(function (d) { return String(d.packingListNumber || '').trim() === n && d.deliveryId !== exceptDeliveryId; });
+  if (clash.length) fail(ERR.CONFLICT, 'Packing list ' + n + ' was already entered as delivery ' + clash[0].reference + '.', 409);
+  return n;
 }
 
 function validateDeliveryHeader(params) {
@@ -106,8 +115,10 @@ function deliveriesCreate(params, ctx) {
   requirePermission(ctx.user, 'deliveries.manage');
   var header = validateDeliveryHeader(params);
   var lines = validateDeliveryLines(params.items);
+  var packingListNumber = validatePackingListNumber(params.packingListNumber, null);
   var now = nowIso();
   var d = {
+    packingListNumber: packingListNumber,
     deliveryId: newId('dlv'), reference: nextReference(SHEETS.DELIVERIES, 'reference', getSetting('deliveryReferencePrefix') || 'DLV'),
     deliveryDate: header.deliveryDate, sourceType: header.sourceType, sourceCongregationId: header.sourceCongregationId, sourceName: header.sourceName,
     receivedBy: header.receivedBy, status: STATUS.DELIVERY.PENDING, notes: header.notes, createdAt: now, createdBy: ctx.user.email,
@@ -134,7 +145,8 @@ function deliveriesUpdate(params, ctx) {
   var now = nowIso();
   t.update(d.deliveryId, {
     deliveryDate: header.deliveryDate, sourceType: header.sourceType, sourceCongregationId: header.sourceCongregationId, sourceName: header.sourceName,
-    receivedBy: header.receivedBy, notes: header.notes, updatedAt: now, updatedBy: ctx.user.email
+    receivedBy: header.receivedBy, notes: header.notes, updatedAt: now, updatedBy: ctx.user.email,
+    packingListNumber: params.packingListNumber === undefined ? (d.packingListNumber || '') : validatePackingListNumber(params.packingListNumber, d.deliveryId)
   });
   // Replace lines: existing lines are updated in place / new lines appended / removed lines zeroed (history preserved).
   var existing = table(SHEETS.DELIVERY_ITEMS).read().filter(function (di) { return di.deliveryId === d.deliveryId; });

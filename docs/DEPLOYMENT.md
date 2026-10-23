@@ -98,6 +98,14 @@ background; sign out or reload to drop them.
    Tick **Enforce HTTPS** once the certificate is issued. Add the domain to the OAuth client's JavaScript origins.
 5. Recommended: Settings → Branches → protect `main` (require the workflow to pass).
 
+### Receiving literature from the branch
+
+On **Incoming Deliveries → Paste packing list**, paste the text of one or more Watchtower packing lists. "Check" shows
+what will happen (existing items, items to be created, lines it cannot read, lists already entered); "Create" makes one
+pending delivery per packing list from Branch Office and creates the missing catalogue items (SKU = symbol, name =
+"Title (Language)", category from the title or symbol, minimum stock 0). Confirm each delivery to post the stock.
+A packing list number can only be entered once.
+
 ## 5. Authorizing users
 
 The initial administrator is `congregationliterature@gmail.com` (seeded by `setup()`). Sign in with that account,

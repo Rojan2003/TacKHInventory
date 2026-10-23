@@ -57,11 +57,12 @@ function itemsHistory(params, ctx) {
 }
 
 function validateItemInput(params, existingId) {
-  var sku = requireString(params, 'sku', 'Item code / SKU', 40).toUpperCase();
+  // The SKU keeps the case as typed (symbols such as g26.1-TG); uniqueness is case-insensitive.
+  var sku = requireString(params, 'sku', 'Item code / SKU', 40);
   var name = requireString(params, 'name', 'Literature name', 160);
   var unit = optionalString(params, 'unit', 20) || 'pcs';
   var minStock = params.minStock === '' || params.minStock === undefined || params.minStock === null ? 0 : requireNonNegativeInt(params.minStock, 'Minimum stock');
-  var duplicate = table(SHEETS.ITEMS).read().filter(function (i) { return String(i.sku).toUpperCase() === sku && i.itemId !== existingId; });
+  var duplicate = table(SHEETS.ITEMS).read().filter(function (i) { return String(i.sku).toUpperCase() === sku.toUpperCase() && i.itemId !== existingId; });
   if (duplicate.length) fail(ERR.CONFLICT, 'An item with code ' + sku + ' already exists.', 409);
   return {
     sku: sku, name: name, description: optionalString(params, 'description', 1000), category: optionalString(params, 'category', 60),

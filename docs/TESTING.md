@@ -39,6 +39,7 @@ npm run secrets:scan  # credential pattern scan
 | 18 | Existing records/formulas intact | backend never writes legacy sheets; test asserts byte-identical legacy data after import | pass |
 | 19 | Backend read cache is safe | backend/cache: hit/miss, in-lock bypass, finally-bump on failed mutation, evicted version, kill switch, size limit, excluded sheets, clearCache, every mutation family invalidates | pass |
 | 20 | Browser cache never leaks between users | unit/queryCache: persisted families only, per-user storage, cleared on logout/401 | pass |
+| 21 | Packing lists import correctly | backend/packing: parser (wrapped titles, separators, languages, categories), dry run writes nothing, duplicates refused, apply + confirm posts once, idempotent; e2e paste → confirm → stock | pass |
 
 Latest local results are recorded in the final project report; CI re-runs `npm test` and the build on every push.
 

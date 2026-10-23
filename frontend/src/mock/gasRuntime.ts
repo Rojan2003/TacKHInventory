@@ -252,7 +252,7 @@ export function createGasRuntime(options: GasRuntimeOptions): GasRuntime {
     warn: (...a: unknown[]) => { if (options.verbose) console.warn(...a) },
   }
 
-  const exportedNames = ['handleRequest', 'setup', 'healthCheck', 'rotateSessionSecret', 'ensureSchema', 'doPost', 'doGet']
+  const exportedNames = ['handleRequest', 'setup', 'healthCheck', 'rotateSessionSecret', 'ensureSchema', 'doPost', 'doGet', 'parsePackingLists', 'packingCategory']
   const body = options.sources.join('\n;\n') + '\nreturn { ' + exportedNames.join(', ') + ' };'
   // eslint-disable-next-line @typescript-eslint/no-implied-eval
   const factory = new Function('SpreadsheetApp', 'LockService', 'PropertiesService', 'CacheService', 'Utilities', 'UrlFetchApp', 'ContentService', 'console', body)
