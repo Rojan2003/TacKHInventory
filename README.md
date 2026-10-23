@@ -5,6 +5,11 @@ East Congregation receives, stores and tracks literature and distributes it to t
 Tagalog congregations. The system records deliveries, congregation requests, approvals, releases, receipts
 and a full stock-movement ledger, with Google Sign-In and server-side role enforcement.
 
+> **Keep the spreadsheet Restricted.** The backend runs as the script owner, so end users never need access to
+> the Google Sheet. Its sharing setting must stay *Restricted* (owner only). "Anyone with the link" exposes every
+> record, the audit log and the authorized-user list to the public and bypasses every permission check in
+> this system. Check it after every share dialog and after copying the sheet.
+
 ## Repository layout
 
 | Path | What it is |

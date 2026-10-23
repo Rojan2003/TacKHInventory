@@ -125,3 +125,29 @@ function adminImportLegacyOpeningBalances(params, ctx) {
   writeAudit(ctx.user.email, 'admin.importLegacyOpeningBalances', 'InventoryTransactions', month, 'Imported ' + plan.length + ' opening balances from legacy sheet (' + month + ')', ctx.requestId, report);
   return report;
 }
+
+/**
+ * Run from the Apps Script editor after pasting new code or changing the manifest. It confirms that the
+ * script is allowed to call Google's token-info endpoint (scope script.external_request). The first run
+ * shows the authorization prompt; afterwards it logs the HTTP status Google returned for a dummy token.
+ * A status of 400 is the expected result and means the sign-in verification path works.
+ */
+function authSelfTest() {
+  var props = getProps();
+  var result = {
+    googleClientIdConfigured: !!props.getProperty('GOOGLE_CLIENT_ID'),
+    sessionSecretConfigured: !!props.getProperty('SESSION_SECRET'),
+    tokeninfoReachable: false,
+    tokeninfoStatus: null,
+    error: null
+  };
+  try {
+    var resp = UrlFetchApp.fetch(TOKENINFO_URL + 'self-test', { muteHttpExceptions: true, followRedirects: false });
+    result.tokeninfoStatus = resp.getResponseCode();
+    result.tokeninfoReachable = true;
+  } catch (e) {
+    result.error = String(e && e.message ? e.message : e);
+  }
+  console.log(JSON.stringify(result, null, 2));
+  return result;
+}

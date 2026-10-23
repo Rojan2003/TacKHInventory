@@ -78,6 +78,10 @@ function verifyGoogleIdToken(idToken) {
   try {
     resp = UrlFetchApp.fetch(TOKENINFO_URL + encodeURIComponent(idToken), { muteHttpExceptions: true, followRedirects: false });
   } catch (e) {
+    var reason = String(e && e.message ? e.message : e);
+    try { console.error('tokeninfo request failed: ' + reason); } catch (ignored) { /* ignore */ }
+    // "You do not have permission to call UrlFetchApp.fetch" = the script was never authorized for script.external_request.
+    if (/permission/i.test(reason)) fail(ERR.CONFIG, 'The backend is not authorized to contact Google. An administrator must run authSelfTest() in the Apps Script editor and grant access.', 500);
     fail(ERR.INTERNAL, 'Google identity verification is temporarily unavailable.', 503);
   }
   if (resp.getResponseCode() !== 200) fail(ERR.UNAUTHENTICATED, 'Google sign-in could not be verified. Please try again.', 401);

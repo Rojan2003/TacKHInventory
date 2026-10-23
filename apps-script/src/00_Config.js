@@ -38,12 +38,12 @@ var CONFIG = {
 
 var ROLES = {
   ADMIN: 'admin',
-  INVENTORY_MANAGER: 'inventory_manager',
+  LITERATURE_SERVANT: 'literature_servant',
   CONGREGATION_USER: 'congregation_user',
   READ_ONLY: 'read_only'
 };
 
-var ALL_ROLES = [ROLES.ADMIN, ROLES.INVENTORY_MANAGER, ROLES.CONGREGATION_USER, ROLES.READ_ONLY];
+var ALL_ROLES = [ROLES.ADMIN, ROLES.LITERATURE_SERVANT, ROLES.CONGREGATION_USER, ROLES.READ_ONLY];
 
 /**
  * Permission matrix. The frontend may hide buttons, but THIS is the security control.
@@ -52,22 +52,22 @@ var ALL_ROLES = [ROLES.ADMIN, ROLES.INVENTORY_MANAGER, ROLES.CONGREGATION_USER, 
 var PERMISSIONS = {
   'dashboard.view':             ALL_ROLES,
   'items.view':                 ALL_ROLES,
-  'items.manage':               [ROLES.ADMIN, ROLES.INVENTORY_MANAGER],
+  'items.manage':               [ROLES.ADMIN, ROLES.LITERATURE_SERVANT],
   'congregations.view':         ALL_ROLES,
   'congregations.manage':       [ROLES.ADMIN],
-  'deliveries.view':            [ROLES.ADMIN, ROLES.INVENTORY_MANAGER, ROLES.READ_ONLY],
-  'deliveries.manage':          [ROLES.ADMIN, ROLES.INVENTORY_MANAGER],
-  'requests.view.all':          [ROLES.ADMIN, ROLES.INVENTORY_MANAGER, ROLES.READ_ONLY],
+  'deliveries.view':            [ROLES.ADMIN, ROLES.LITERATURE_SERVANT, ROLES.READ_ONLY],
+  'deliveries.manage':          [ROLES.ADMIN, ROLES.LITERATURE_SERVANT],
+  'requests.view.all':          [ROLES.ADMIN, ROLES.LITERATURE_SERVANT, ROLES.READ_ONLY],
   'requests.view.own':          [ROLES.CONGREGATION_USER],
-  'requests.create':            [ROLES.ADMIN, ROLES.INVENTORY_MANAGER, ROLES.CONGREGATION_USER],
-  'requests.decide':            [ROLES.ADMIN, ROLES.INVENTORY_MANAGER],
-  'distributions.view.all':     [ROLES.ADMIN, ROLES.INVENTORY_MANAGER, ROLES.READ_ONLY],
+  'requests.create':            [ROLES.ADMIN, ROLES.LITERATURE_SERVANT, ROLES.CONGREGATION_USER],
+  'requests.decide':            [ROLES.ADMIN, ROLES.LITERATURE_SERVANT],
+  'distributions.view.all':     [ROLES.ADMIN, ROLES.LITERATURE_SERVANT, ROLES.READ_ONLY],
   'distributions.view.own':     [ROLES.CONGREGATION_USER],
-  'distributions.create':       [ROLES.ADMIN, ROLES.INVENTORY_MANAGER],
-  'distributions.confirm':      [ROLES.ADMIN, ROLES.INVENTORY_MANAGER, ROLES.CONGREGATION_USER],
-  'stock.view.all':             [ROLES.ADMIN, ROLES.INVENTORY_MANAGER, ROLES.READ_ONLY],
+  'distributions.create':       [ROLES.ADMIN, ROLES.LITERATURE_SERVANT],
+  'distributions.confirm':      [ROLES.ADMIN, ROLES.LITERATURE_SERVANT, ROLES.CONGREGATION_USER],
+  'stock.view.all':             [ROLES.ADMIN, ROLES.LITERATURE_SERVANT, ROLES.READ_ONLY],
   'stock.view.own':             [ROLES.CONGREGATION_USER],
-  'reports.view':               [ROLES.ADMIN, ROLES.INVENTORY_MANAGER, ROLES.READ_ONLY],
+  'reports.view':               [ROLES.ADMIN, ROLES.LITERATURE_SERVANT, ROLES.READ_ONLY],
   'reports.view.own':           [ROLES.CONGREGATION_USER],
   'users.manage':               [ROLES.ADMIN],
   'audit.view':                 [ROLES.ADMIN],

@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth'
 import { describeError, ApiError } from '@/services/api'
 import { loadGoogleIdentity } from '@/services/google'
 import { API_MODE } from '@/config'
+import { ROLE_LABELS, type Role } from '@/types/api'
 import AppButton from '@/components/ui/AppButton.vue'
 
 const auth = useAuthStore()
@@ -102,7 +103,7 @@ async function resetDemo() {
             <div class="w-full grid gap-2">
               <button v-for="a in mockAccounts" :key="a.email" type="button" class="flex items-center justify-between rounded-xl border border-gray-200 px-3 py-2.5 text-left text-sm hover:border-brand-400 hover:bg-brand-50 min-h-11 disabled:opacity-50" :disabled="signingIn" @click="completeLogin(`mock:${a.email}:${a.name}`)">
                 <span><span class="font-medium text-ink">{{ a.name }}</span><span class="block text-xs text-muted">{{ a.email }}</span></span>
-                <span class="text-xs text-muted">{{ a.role }}</span>
+                <span class="text-xs text-muted">{{ ROLE_LABELS[a.role as Role] ?? a.role }}</span>
               </button>
             </div>
             <button type="button" class="text-xs text-muted inline-flex items-center gap-1 hover:text-ink" @click="resetDemo"><RotateCcw class="size-3.5" /> Reset demo data</button>

@@ -8,15 +8,17 @@ import { createGasRuntime, LEGACY_SHEETS_SAMPLE, type GasRuntime, type RuntimeSn
 import type { ApiEnvelope, RequestEnvelope } from '@/types/api'
 import type { Transport } from './api'
 
-const STORAGE_KEY = 'ecli.mock.db.v1'
+const STORAGE_KEY = 'ecli.mock.db.v4' // bumped whenever the seed changes so browsers pick up the new demo data
 
 const sourceModules = import.meta.glob('../../../apps-script/src/*.js', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 
 export const MOCK_ACCOUNTS = [
   { email: 'congregationliterature@gmail.com', name: 'Initial Administrator', role: 'admin' },
-  { email: 'manager@example.com', name: 'Inventory Manager', role: 'inventory_manager' },
-  { email: 'west@example.com', name: 'West Secretary', role: 'congregation_user' },
-  { email: 'slc@example.com', name: 'SLC Secretary', role: 'congregation_user' },
+  { email: 'manager@example.com', name: 'Congregation Literature Servant', role: 'literature_servant' },
+  { email: 'west@example.com', name: 'West Literature Overseer', role: 'congregation_user' },
+  { email: 'slc@example.com', name: 'SLC Literature Overseer', role: 'congregation_user' },
+  { email: 'central@example.com', name: 'Central Literature Overseer', role: 'congregation_user' },
+  { email: 'tagalog@example.com', name: 'Tagalog Literature Overseer', role: 'congregation_user' },
   { email: 'viewer@example.com', name: 'Read-Only Viewer', role: 'read_only' },
   { email: 'stranger@example.com', name: 'Unauthorized Account', role: '(not authorized)' },
 ]
@@ -48,9 +50,11 @@ function seedDemoData(rt: GasRuntime) {
   const admin = call<{ token: string }>('auth.login', { idToken: 'mock:congregationliterature@gmail.com:Initial Administrator' }).token
   const congs = call<{ code: string; congregationId: string }[]>('congregations.list', {}, admin)
   const byCode = Object.fromEntries(congs.map((c) => [c.code, c.congregationId]))
-  call('users.create', { email: 'manager@example.com', name: 'Inventory Manager', role: 'inventory_manager' }, admin)
-  call('users.create', { email: 'west@example.com', name: 'West Secretary', role: 'congregation_user', congregationId: byCode.WEST }, admin)
-  call('users.create', { email: 'slc@example.com', name: 'SLC Secretary', role: 'congregation_user', congregationId: byCode.SLC }, admin)
+  call('users.create', { email: 'manager@example.com', name: 'Congregation Literature Servant', role: 'literature_servant' }, admin)
+  call('users.create', { email: 'west@example.com', name: 'West Literature Overseer', role: 'congregation_user', congregationId: byCode.WEST }, admin)
+  call('users.create', { email: 'slc@example.com', name: 'SLC Literature Overseer', role: 'congregation_user', congregationId: byCode.SLC }, admin)
+  call('users.create', { email: 'central@example.com', name: 'Central Literature Overseer', role: 'congregation_user', congregationId: byCode.CENTRAL }, admin)
+  call('users.create', { email: 'tagalog@example.com', name: 'Tagalog Literature Overseer', role: 'congregation_user', congregationId: byCode.TAGALOG }, admin)
   call('users.create', { email: 'viewer@example.com', name: 'Read-Only Viewer', role: 'read_only' }, admin)
   const items = [
     ['LIT001', 'Awake!', 'Magazines', 120],
@@ -61,15 +65,15 @@ function seedDemoData(rt: GasRuntime) {
     ['LIT006', 'Bible Teach', 'Books', 0],
   ] as const
   const created = items.map(([sku, name, category, qty]) => call<{ itemId: string }>('items.create', { sku, name, category, unit: 'pcs', minStock: 10, openingQty: qty }, admin))
-  const manager = call<{ token: string }>('auth.login', { idToken: 'mock:manager@example.com:Inventory Manager' }).token
-  call('deliveries.create', { deliveryDate: new Date().toISOString().slice(0, 10), sourceType: 'supplier', sourceName: 'Branch Office', receivedBy: 'Inventory Manager', confirmNow: true, items: [{ itemId: created[2].itemId, quantity: 20 }, { itemId: created[5].itemId, quantity: 15 }] }, manager)
-  call('deliveries.create', { deliveryDate: new Date().toISOString().slice(0, 10), sourceType: 'supplier', sourceName: 'Branch Office', receivedBy: 'Inventory Manager', items: [{ itemId: created[0].itemId, quantity: 50 }] }, manager)
-  const west = call<{ token: string }>('auth.login', { idToken: 'mock:west@example.com:West Secretary' }).token
-  const req = call<{ requestId: string }>('requests.create', { submit: true, requestedBy: 'West Secretary', items: [{ itemId: created[0].itemId, quantity: 30 }, { itemId: created[1].itemId, quantity: 20 }] }, west)
+  const manager = call<{ token: string }>('auth.login', { idToken: 'mock:manager@example.com:Congregation Literature Servant' }).token
+  call('deliveries.create', { deliveryDate: new Date().toISOString().slice(0, 10), sourceType: 'supplier', sourceName: 'Branch Office', receivedBy: 'Congregation Literature Servant', confirmNow: true, items: [{ itemId: created[2].itemId, quantity: 20 }, { itemId: created[5].itemId, quantity: 15 }] }, manager)
+  call('deliveries.create', { deliveryDate: new Date().toISOString().slice(0, 10), sourceType: 'supplier', sourceName: 'Branch Office', receivedBy: 'Congregation Literature Servant', items: [{ itemId: created[0].itemId, quantity: 50 }] }, manager)
+  const west = call<{ token: string }>('auth.login', { idToken: 'mock:west@example.com:West Literature Overseer' }).token
+  const req = call<{ requestId: string }>('requests.create', { submit: true, requestedBy: 'West Literature Overseer', items: [{ itemId: created[0].itemId, quantity: 30 }, { itemId: created[1].itemId, quantity: 20 }] }, west)
   call('requests.approve', { requestId: req.requestId }, manager)
-  call('distributions.create', { requestId: req.requestId, releasedBy: 'Inventory Manager', receivedBy: 'West Secretary', items: [{ itemId: created[0].itemId, quantity: 30 }] }, manager)
-  const slc = call<{ token: string }>('auth.login', { idToken: 'mock:slc@example.com:SLC Secretary' }).token
-  call('requests.create', { submit: true, requestedBy: 'SLC Secretary', items: [{ itemId: created[4].itemId, quantity: 10 }] }, slc)
+  call('distributions.create', { requestId: req.requestId, releasedBy: 'Congregation Literature Servant', receivedBy: 'West Literature Overseer', items: [{ itemId: created[0].itemId, quantity: 30 }] }, manager)
+  const slc = call<{ token: string }>('auth.login', { idToken: 'mock:slc@example.com:SLC Literature Overseer' }).token
+  call('requests.create', { submit: true, requestedBy: 'SLC Literature Overseer', items: [{ itemId: created[4].itemId, quantity: 10 }] }, slc)
 }
 
 let runtime: GasRuntime | null = null

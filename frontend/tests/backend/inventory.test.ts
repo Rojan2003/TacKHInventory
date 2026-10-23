@@ -86,7 +86,7 @@ describe('deliveries and the ledger', () => {
 
 describe('requests, reservations and distributions', () => {
   function approvedRequest(h: ReturnType<typeof createHarness>, s: ReturnType<typeof seedScenario>, lines: { itemId: string; quantity: number }[]) {
-    const req = h.ok<any>('requests.create', { items: lines, submit: true, requestedBy: 'West Secretary' }, s.west)
+    const req = h.ok<any>('requests.create', { items: lines, submit: true, requestedBy: 'West Literature Overseer' }, s.west)
     expect(req.status).toBe('Pending')
     expect(req.congregationId).toBe(s.congs.WEST.congregationId) // forced to own congregation
     return h.ok<any>('requests.approve', { requestId: req.requestId }, s.manager)
