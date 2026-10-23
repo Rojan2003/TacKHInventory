@@ -241,6 +241,7 @@ const reconcileIssues = computed(() => reconcileResult.value ? reconcileResult.v
         <FormField label="Google account email" for="u-email" required :error="userErrors.email" :help="userErrors.email ? '' : emailHelp">
           <input id="u-email" v-model="userForm.email" type="email" class="input" :disabled="!!userDialog.editing" maxlength="160" autocomplete="off" spellcheck="false" @input="userErrors.email = ''" />
           <button v-if="!userDialog.editing && emailInfo.suggestion" type="button" class="mt-1.5 text-sm text-brand-700 hover:underline" data-testid="email-suggestion" @click="acceptEmailSuggestion">Did you mean <span class="font-medium">{{ emailInfo.suggestion }}</span>?</button>
+          <p v-if="!userDialog.editing && emailInfo.normalized" class="mt-1.5 text-xs text-muted" data-testid="email-normalized-note">Saved as <span class="font-medium">{{ emailInfo.value }}</span>, the form Google uses for this account.</p>
           <p v-if="!userDialog.editing && emailInfo.valid && !emailInfo.isGoogleDomain" class="mt-1.5 text-xs text-muted" data-testid="email-google-note">This person must sign in with a Google account that uses exactly this address.</p>
         </FormField>
         <FormField label="Display name" for="u-name"><input id="u-name" v-model="userForm.name" class="input" maxlength="120" /></FormField>
