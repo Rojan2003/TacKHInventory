@@ -21,8 +21,7 @@ describe('analyzeEmail hints', () => {
     expect(hint('some@one@gmail.com')).toBe('Only one @ is allowed.')
     expect(hint('@gmail.com')).toBe('Missing the part before the @.')
     expect(hint('someone@')).toBe('Missing the part after the @.')
-    expect(hint('someone@gmai')).toBe('Missing the ending, like .com.')
-    expect(hint('someone@gmail')).toBeNull() // exception: completed to @gmail.com
+    expect(hint('someone@gmail')).toBe('Missing the ending, like .com.')
     expect(hint('someone@gmail.')).toBe('The ending is incomplete.')
     expect(hint('someone@gmail..com')).toBe('The ending is incomplete.')
     expect(hint('someone@gmail.com')).toBeNull()
@@ -42,6 +41,7 @@ describe('analyzeEmail hints', () => {
 describe('analyzeEmail suggestions', () => {
   const suggestion = (s: string) => analyzeEmail(s).suggestion
   it('offers gmail.com for an unfinished or misspelt Gmail domain', () => {
+    expect(suggestion('someone@gmail')).toBe('someone@gmail.com')
     expect(suggestion('someone@gmail.')).toBe('someone@gmail.com')
     expect(suggestion('someone@gmial.com')).toBe('someone@gmail.com')
     expect(suggestion('someone@gamil.com')).toBe('someone@gmail.com')
@@ -69,16 +69,6 @@ describe('analyzeEmail suggestions', () => {
     expect(suggestion('someone@bigdogbuilds.com')).toBeNull()
     expect(suggestion('someone')).toBeNull()
     expect(suggestion('@gmail')).toBeNull()
-  })
-})
-
-describe('analyzeEmail @gmail exception', () => {
-  it('accepts @gmail and @googlemail without the ending and completes them to the form Google reports', () => {
-    const a = analyzeEmail('jlambino.ldc@gmail')
-    expect(a).toMatchObject({ value: 'jlambino.ldc@gmail.com', valid: true, hint: null, suggestion: null, isGoogleDomain: true, normalized: true })
-    expect(analyzeEmail('x@googlemail')).toMatchObject({ value: 'x@googlemail.com', valid: true, normalized: true })
-    expect(analyzeEmail('x@gmail.com').normalized).toBe(false)
-    expect(analyzeEmail('x@gmailx').valid).toBe(false)
   })
 })
 

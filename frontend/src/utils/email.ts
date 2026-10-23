@@ -28,8 +28,6 @@ export interface EmailAnalysis {
   suggestion: string | null
   /** gmail.com / googlemail.com; other domains get the "must sign in with a Google account" note. */
   isGoogleDomain: boolean
-  /** True when the typed address was completed to its Google form ("@gmail" -> "@gmail.com"). */
-  normalized: boolean
 }
 
 /** Strips surrounding whitespace, non-breaking spaces, zero-width and direction characters, and a "mailto:" prefix. */
@@ -95,9 +93,7 @@ function hintFor(value: string): string | null {
 }
 
 export function analyzeEmail(raw: unknown): EmailAnalysis {
-  const typed = cleanEmail(raw)
-  // Exception: "" / "" without the ending is accepted; the backend stores and compares it as ".com".
-  const value = /@(gmail|googlemail)$/i.test(typed) ? typed + '.com' : typed
+  const value = cleanEmail(raw)
   const hint = hintFor(value)
   const domain = value.includes('@') ? value.slice(value.indexOf('@') + 1).toLowerCase() : ''
   return {
@@ -106,6 +102,5 @@ export function analyzeEmail(raw: unknown): EmailAnalysis {
     valid: hint === null && BACKEND_EMAIL_RE.test(value),
     suggestion: suggestDomain(value),
     isGoogleDomain: GOOGLE_DOMAINS.has(domain),
-    normalized: value !== typed,
   }
 }

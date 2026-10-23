@@ -107,12 +107,7 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
 }
 
-function normalizeEmail(email) {
-  var e = String(email || '').trim().toLowerCase();
-  // Exception: a Gmail address typed without its ending is accepted and handled in the form Google reports it.
-  if (/@(gmail|googlemail)$/.test(e)) e += '.com';
-  return e;
-}
+function normalizeEmail(email) { return String(email || '').trim().toLowerCase(); }
 
 function ok(data, message, requestId) {
   return { success: true, data: data === undefined ? null : data, message: message || '', error: null, requestId: requestId || null };

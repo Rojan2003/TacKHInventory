@@ -116,14 +116,3 @@ describe('authorization matrix', () => {
     expect(h.call('reports.run', { type: 'requests' }, west).success).toBe(true)
   })
 })
-
-describe('@gmail exception', () => {
-  it('stores and matches an address typed without the ending in the form Google reports', () => {
-    const h = createHarness()
-    const created = h.ok<any>('users.create', { email: 'jlambino.ldc@gmail', name: 'J', role: 'read_only' }, h.admin)
-    expect(created.email).toBe('jlambino.ldc@gmail.com')
-    expect(h.login('jlambino.ldc@gmail.com', 'J').user.email).toBe('jlambino.ldc@gmail.com')
-    expect(h.call('users.create', { email: 'jlambino.ldc@gmail.com', name: 'dup', role: 'read_only' }, h.admin).error?.code).toBe('CONFLICT')
-    expect(h.call('users.create', { email: 'someone@gmailx', name: 'bad', role: 'read_only' }, h.admin).error?.code).toBe('VALIDATION_ERROR')
-  })
-})
