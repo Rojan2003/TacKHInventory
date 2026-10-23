@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import { Plus, Pencil, UserCheck, UserX, Wrench, Database } from 'lucide-vue-next'
+import { Plus, Pencil, UserCheck, UserX, Wrench, Database, Eraser } from 'lucide-vue-next'
 import { api, describeError } from '@/services/api'
 import { useMutation } from '@/composables/useAsync'
 import { usePagedList } from '@/composables/usePagedList'
@@ -10,6 +10,7 @@ import { useReferenceStore } from '@/stores/reference'
 import { useToastStore } from '@/stores/toast'
 import { ROLE_LABELS, type AuditEntry, type Congregation, type LegacyImportReport, type ReconcileReport, type Role, type Setting, type User } from '@/types/api'
 import { formatDateTime, formatNumber } from '@/utils/format'
+import { analyzeEmail } from '@/utils/email'
 import PageHeader from '@/components/ui/PageHeader.vue'
 import FilterBar from '@/components/ui/FilterBar.vue'
 import DataTable, { type Column } from '@/components/ui/DataTable.vue'
@@ -38,15 +39,20 @@ const userColumns: Column[] = [
 const userDialog = reactive({ open: false, editing: null as User | null })
 const userForm = reactive({ email: '', name: '', role: 'read_only' as Role, congregationId: '', active: true })
 const userErrors = ref<Record<string, string>>({})
+// Live email hints for "Add user": cleaned value, a specific hint, an optional "Did you mean" suggestion (never auto-applied).
+const emailInfo = computed(() => analyzeEmail(userForm.email))
+const EMAIL_HELP = 'The person signs in with this Google account. Their identity is verified by Google; this list decides who is allowed in.'
+const emailHelp = computed(() => (userDialog.editing || !userForm.email ? EMAIL_HELP : emailInfo.value.hint || ''))
+function acceptEmailSuggestion() { if (emailInfo.value.suggestion) userForm.email = emailInfo.value.suggestion }
 function openUserCreate() { userDialog.editing = null; Object.assign(userForm, { email: '', name: '', role: 'read_only', congregationId: '', active: true }); userErrors.value = {}; userDialog.open = true }
 function openUserEdit(u: User) { userDialog.editing = u; Object.assign(userForm, { email: u.email, name: u.name, role: u.role, congregationId: u.congregationId, active: u.active }); userErrors.value = {}; userDialog.open = true }
 const saveUser = useMutation(async (rid: string) => {
   if (userDialog.editing) return api.call<User>('users.update', { userId: userDialog.editing.userId, name: userForm.name, role: userForm.role, congregationId: userForm.congregationId, active: userForm.active }, { requestId: rid })
-  return api.call<User>('users.create', { email: userForm.email, name: userForm.name, role: userForm.role, congregationId: userForm.congregationId }, { requestId: rid })
+  return api.call<User>('users.create', { email: emailInfo.value.value, name: userForm.name, role: userForm.role, congregationId: userForm.congregationId }, { requestId: rid })
 }, { successTitle: 'User saved' })
 async function submitUser() {
   const e: Record<string, string> = {}
-  if (!userDialog.editing && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userForm.email.trim())) e.email = 'Enter a valid Google account email.'
+  if (!userDialog.editing && !emailInfo.value.valid) e.email = emailInfo.value.hint || 'Enter a valid Google account email.'
   if (userForm.role === 'congregation_user' && !userForm.congregationId) e.congregationId = 'Congregation users must be linked to a congregation.'
   userErrors.value = e
   if (Object.keys(e).length) return
@@ -116,6 +122,9 @@ async function runImport(apply: boolean) {
   const res = await legacyImport.mutate(apply)
   if (res) { importResult.value = res; if (apply) { toast.success('Opening balances imported'); reference.invalidate(['items']) } }
 }
+const clearCache = useMutation((rid: string) => api.call<{ dataVersion: string; cacheEnabled: boolean; ttlSeconds: number }>('admin.clearCache', {}, { requestId: rid }), { successTitle: 'Backend cache cleared' })
+const cacheResult = ref<{ dataVersion: string; cacheEnabled: boolean; ttlSeconds: number } | null>(null)
+async function runClearCache() { const res = await clearCache.mutate(); if (res) cacheResult.value = res }
 const reconcileIssues = computed(() => reconcileResult.value ? reconcileResult.value.balanceFixes.length + reconcileResult.value.fulfilledFixes.length + reconcileResult.value.processingDistributions.length : 0)
 </script>
 
@@ -205,6 +214,12 @@ const reconcileIssues = computed(() => reconcileResult.value ? reconcileResult.v
         </div>
       </section>
       <section class="card p-4 sm:p-5">
+        <h2 class="font-semibold text-ink flex items-center gap-2"><Eraser class="size-4 text-brand-600" /> Clear backend cache</h2>
+        <p class="text-sm text-muted mt-1">The backend keeps worksheet reads for up to 2 minutes and drops them automatically after every change made through the app. If you edit the spreadsheet by hand and want the app to show it right away, clear the cache here; the app itself refreshes its own cached pages too.</p>
+        <div class="mt-3 flex gap-2"><AppButton variant="outline" :loading="clearCache.pending.value" @click="runClearCache">Clear cache</AppButton></div>
+        <p v-if="cacheResult" class="mt-3 text-xs text-muted">Cleared. Backend caching is {{ cacheResult.cacheEnabled ? `on (entries live up to ${cacheResult.ttlSeconds} s)` : 'switched off by the CACHE_ENABLED property' }}.</p>
+      </section>
+      <section class="card p-4 sm:p-5">
         <h2 class="font-semibold text-ink flex items-center gap-2"><Database class="size-4 text-brand-600" /> Import legacy opening balances</h2>
         <p class="text-sm text-muted mt-1">Reads the latest month of the original East_Inventory worksheet and posts it as opening balances for matching item codes. One-time, append-only; the legacy worksheet is left untouched. Run a dry run first.</p>
         <div class="mt-3 grid gap-3 sm:grid-cols-2">
@@ -223,7 +238,11 @@ const reconcileIssues = computed(() => reconcileResult.value ? reconcileResult.v
     <!-- User dialog -->
     <Modal :open="userDialog.open" :title="userDialog.editing ? 'Edit authorized account' : 'Authorize a Google account'" @close="userDialog.open = false">
       <form id="user-form" class="space-y-4" @submit.prevent="submitUser">
-        <FormField label="Google account email" for="u-email" required :error="userErrors.email" help="The person signs in with this Google account. Their identity is verified by Google; this list decides who is allowed in."><input id="u-email" v-model="userForm.email" type="email" class="input" :disabled="!!userDialog.editing" maxlength="160" /></FormField>
+        <FormField label="Google account email" for="u-email" required :error="userErrors.email" :help="userErrors.email ? '' : emailHelp">
+          <input id="u-email" v-model="userForm.email" type="email" class="input" :disabled="!!userDialog.editing" maxlength="160" autocomplete="off" spellcheck="false" @input="userErrors.email = ''" />
+          <button v-if="!userDialog.editing && emailInfo.suggestion" type="button" class="mt-1.5 text-sm text-brand-700 hover:underline" data-testid="email-suggestion" @click="acceptEmailSuggestion">Did you mean <span class="font-medium">{{ emailInfo.suggestion }}</span>?</button>
+          <p v-if="!userDialog.editing && emailInfo.valid && !emailInfo.isGoogleDomain" class="mt-1.5 text-xs text-muted" data-testid="email-google-note">This person must sign in with a Google account that uses exactly this address.</p>
+        </FormField>
         <FormField label="Display name" for="u-name"><input id="u-name" v-model="userForm.name" class="input" maxlength="120" /></FormField>
         <FormField label="Role" for="u-role" required><select id="u-role" v-model="userForm.role" class="input"><option v-for="(label, r) in ROLE_LABELS" :key="r" :value="r">{{ label }}</option></select></FormField>
         <FormField label="Congregation" for="u-cong" :required="userForm.role === 'congregation_user'" :error="userErrors.congregationId" help="Required for congregation users; scopes what they can see and request."><select id="u-cong" v-model="userForm.congregationId" class="input"><option value="">None</option><option v-for="c in reference.memberCongregations" :key="c.congregationId" :value="c.congregationId">{{ c.name }}</option></select></FormField>

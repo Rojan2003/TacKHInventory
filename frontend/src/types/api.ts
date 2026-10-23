@@ -141,6 +141,7 @@ export interface Delivery {
   receivedBy: string
   status: DeliveryStatus
   notes: string
+  packingListNumber: string
   createdAt: string
   createdBy: string
   confirmedAt: string
@@ -323,4 +324,44 @@ export interface LegacyImportReport {
   planned: { itemId: string; sku: string; name: string; quantity: number }[]
   unmatched: { sku: string; name: string; quantity: number }[]
   created: string[]
+}
+
+/** app.bootstrap: everything the shell needs after sign-in, in one round trip. */
+export interface BootstrapResponse {
+  user: User
+  congregations: Congregation[]
+  settings: Setting[]
+  build: string
+}
+
+/* ---------- Paste packing list ---------- */
+export interface PackingListLine {
+  quantity: number
+  symbol: string
+  language: string
+  title: string
+  category: string
+  itemId: string
+  sku: string
+  name: string
+  action: 'exists' | 'existsInactive' | 'create'
+}
+export interface PackingListProblem { text: string; reason: string }
+export interface PackingListPlanEntry {
+  number: string
+  status: 'ok' | 'duplicate' | 'empty' | 'problems'
+  problem: string
+  lines: PackingListLine[]
+  unparsed: PackingListProblem[]
+  notes: string[]
+  deliveryId?: string
+  reference?: string
+}
+export interface PackingListImportResult {
+  apply: boolean
+  deliveryDate: string
+  lists: PackingListPlanEntry[]
+  unparsed: PackingListProblem[]
+  itemsCreated: string[]
+  deliveriesCreated: { deliveryId: string; reference: string; number: string }[]
 }

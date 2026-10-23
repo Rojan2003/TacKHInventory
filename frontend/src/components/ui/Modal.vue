@@ -2,7 +2,7 @@
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { X } from 'lucide-vue-next'
 
-const props = withDefaults(defineProps<{ open: boolean; title: string; size?: 'sm' | 'md' | 'lg' | 'xl'; persistent?: boolean }>(), { size: 'md', persistent: false })
+const props = withDefaults(defineProps<{ open: boolean; title: string; size?: 'sm' | 'md' | 'lg' | 'xl'; persistent?: boolean; /** Stacks above other modals (used by the confirm dialog, which may open from inside a modal). */ above?: boolean }>(), { size: 'md', persistent: false, above: false })
 const emit = defineEmits<{ close: [] }>()
 const panel = ref<HTMLElement | null>(null)
 
@@ -22,7 +22,7 @@ const SIZES = { sm: 'sm:max-w-md', md: 'sm:max-w-lg', lg: 'sm:max-w-2xl', xl: 's
 <template>
   <Teleport to="body">
     <Transition enter-active-class="transition duration-150" enter-from-class="opacity-0" leave-active-class="transition duration-100" leave-to-class="opacity-0">
-      <div v-if="open" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4" @click.self="!persistent && emit('close')">
+      <div v-if="open" :class="['fixed inset-0 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4', above ? 'z-[55]' : 'z-50']" @click.self="!persistent && emit('close')">
         <div ref="panel" role="dialog" aria-modal="true" :aria-label="title" :class="['w-full bg-white shadow-xl rounded-t-2xl sm:rounded-2xl max-h-[92dvh] flex flex-col', SIZES[size]]">
           <div class="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
             <h2 class="text-base font-semibold text-ink">{{ title }}</h2>

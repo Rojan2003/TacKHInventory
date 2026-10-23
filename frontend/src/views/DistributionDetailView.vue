@@ -3,7 +3,8 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { CheckCircle2, Printer } from 'lucide-vue-next'
 import { api } from '@/services/api'
-import { useAsync, useMutation } from '@/composables/useAsync'
+import { useMutation } from '@/composables/useAsync'
+import { useApiQuery } from '@/composables/useApiQuery'
 import { useConfirm } from '@/composables/useConfirm'
 import { useAuthStore } from '@/stores/auth'
 import type { Distribution } from '@/types/api'
@@ -18,7 +19,7 @@ const route = useRoute()
 const auth = useAuthStore()
 const { confirm } = useConfirm()
 const distributionId = computed(() => String(route.params.distributionId))
-const { data: d, loading, error, reload } = useAsync<Distribution>(() => api.call('distributions.get', { distributionId: distributionId.value }))
+const { data: d, loading, error, reload, setData } = useApiQuery<Distribution>('distributions.get', () => ({ distributionId: distributionId.value }))
 
 const canConfirm = computed(() => !!d.value && d.value.status === 'Released' && auth.can('distributions.confirm') && (!auth.isCongregationUser || d.value.destinationCongregationId === auth.user?.congregationId))
 const justCreated = computed(() => route.query.new === '1')
@@ -28,7 +29,7 @@ async function onConfirm() {
   const c = await confirm({ title: `Confirm receipt of ${d.value?.reference}?`, message: `Confirm that ${d.value?.destinationName} has received ${formatNumber(d.value?.totalQty)} units.`, confirmText: 'Confirm received', inputLabel: 'Received by', inputPlaceholder: auth.user?.name || '' })
   if (!c.confirmed) return
   const res = await confirmMutation.mutate(c.input)
-  if (res) d.value = res
+  if (res) setData(res)
 }
 function print() { window.print() }
 </script>

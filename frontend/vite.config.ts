@@ -17,6 +17,9 @@ export default defineConfig(({ mode }) => {
       // Mock mode loads the Apps Script sources from ../apps-script/src (outside the Vite root).
       fs: { allow: ['..'] },
     },
+    // Pre-bundle the query library so the dev server never discovers it at runtime and force-reloads the page
+    // (a reload drops the in-memory query cache, which the e2e cache test checks).
+    optimizeDeps: { include: ['@tanstack/vue-query'] },
     build: {
       outDir: 'dist',
       sourcemap: false,

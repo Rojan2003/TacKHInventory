@@ -3,7 +3,8 @@ import { computed, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { SlidersHorizontal } from 'lucide-vue-next'
 import { api } from '@/services/api'
-import { useAsync, useMutation } from '@/composables/useAsync'
+import { useMutation } from '@/composables/useAsync'
+import { useApiQuery } from '@/composables/useApiQuery'
 import { usePagedList } from '@/composables/usePagedList'
 import { useAuthStore } from '@/stores/auth'
 import { useReferenceStore } from '@/stores/reference'
@@ -26,7 +27,7 @@ const auth = useAuthStore()
 const reference = useReferenceStore()
 const itemId = computed(() => String(route.params.itemId))
 
-const { data: item, loading, error, reload } = useAsync<Item>(() => api.call('items.get', { itemId: itemId.value }))
+const { data: item, loading, error, reload } = useApiQuery<Item>('items.get', () => ({ itemId: itemId.value }))
 const history = usePagedList<LedgerEntry>('items.history', { itemId: itemId.value, from: '', to: '' }, { pageSize: 20 })
 
 const columns: Column[] = [

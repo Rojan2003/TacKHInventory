@@ -23,7 +23,7 @@ and records are preserved regardless.
 | `Congregations` | congregationId | code, name, type (`coordinator`/`member`/`supplier`), active, notes, createdAt, updatedAt |
 | `InventoryTransactions` (ledger) | txnId | timestamp, type (`OPENING_BALANCE`/`DELIVERY_IN`/`DISTRIBUTION_OUT`/`ADJUSTMENT`), itemId, quantity (±), holderCongregationId, refType, refId, counterpartyCongregationId, actor, notes, requestKey |
 | `InventoryBalances` (cache) | itemId | physicalQty, lastTxnId, updatedAt |
-| `Deliveries` | deliveryId | reference (`DLV-yyyy-nnnn`), deliveryDate, sourceType, sourceCongregationId, sourceName, receivedBy, status, notes, createdAt, createdBy, confirmedAt, confirmedBy, updatedAt, updatedBy |
+| `Deliveries` | deliveryId | reference (`DLV-yyyy-nnnn`), deliveryDate, sourceType, sourceCongregationId, sourceName, receivedBy, status, notes, createdAt, createdBy, confirmedAt, confirmedBy, updatedAt, updatedBy, packingListNumber (unique; set by "Paste packing list") |
 | `DeliveryItems` | deliveryItemId | deliveryId, itemId, quantity |
 | `Requests` | requestId | requestNumber (`REQ-yyyy-nnnn`), congregationId, requestDate, requestedBy, approvedBy, status, notes, decisionNotes, createdAt, createdBy, submittedAt, decidedAt, updatedAt, updatedBy |
 | `RequestItems` | requestItemId | requestId, itemId, requestedQty, approvedQty, fulfilledQty |

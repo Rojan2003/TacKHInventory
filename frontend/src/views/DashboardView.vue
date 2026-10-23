@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue'
+import { computed, reactive } from 'vue'
 import { Boxes, Package, Layers, Lock, Truck, ClipboardList, Send, AlertTriangle, RefreshCw, History } from 'lucide-vue-next'
-import { api } from '@/services/api'
-import { useAsync } from '@/composables/useAsync'
+import { useApiQuery } from '@/composables/useApiQuery'
 import { useAuthStore } from '@/stores/auth'
 import { useReferenceStore } from '@/stores/reference'
 import type { DashboardSummary } from '@/types/api'
@@ -18,10 +17,7 @@ const auth = useAuthStore()
 const reference = useReferenceStore()
 const filters = reactive({ from: '', to: '', congregationId: '' })
 
-const { data, loading, error, reload } = useAsync<DashboardSummary>(() =>
-  api.call('dashboard.summary', { from: filters.from || undefined, to: filters.to || undefined, congregationId: filters.congregationId || undefined }),
-)
-watch(filters, () => void reload())
+const { data, loading, error, reload } = useApiQuery<DashboardSummary>('dashboard.summary', () => ({ from: filters.from, to: filters.to, congregationId: filters.congregationId }))
 void reference.loadCongregations()
 
 const isCong = computed(() => auth.isCongregationUser)

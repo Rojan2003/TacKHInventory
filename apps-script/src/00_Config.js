@@ -98,7 +98,9 @@ var SCHEMA = {
   Congregations: ['congregationId', 'code', 'name', 'type', 'active', 'notes', 'createdAt', 'updatedAt'],
   InventoryBalances: ['itemId', 'physicalQty', 'lastTxnId', 'updatedAt'],
   InventoryTransactions: ['txnId', 'timestamp', 'type', 'itemId', 'quantity', 'holderCongregationId', 'refType', 'refId', 'counterpartyCongregationId', 'actor', 'notes', 'requestKey'],
-  Deliveries: ['deliveryId', 'reference', 'deliveryDate', 'sourceType', 'sourceCongregationId', 'sourceName', 'receivedBy', 'status', 'notes', 'createdAt', 'createdBy', 'confirmedAt', 'confirmedBy', 'updatedAt', 'updatedBy'],
+  Deliveries: ['deliveryId', 'reference', 'deliveryDate', 'sourceType', 'sourceCongregationId', 'sourceName', 'receivedBy', 'status', 'notes', 'createdAt', 'createdBy', 'confirmedAt', 'confirmedBy', 'updatedAt', 'updatedBy',
+    // appended for "Paste packing list" (never reorder; ensureSchema() adds missing columns)
+    'packingListNumber'],
   DeliveryItems: ['deliveryItemId', 'deliveryId', 'itemId', 'quantity'],
   Requests: ['requestId', 'requestNumber', 'congregationId', 'requestDate', 'requestedBy', 'approvedBy', 'status', 'notes', 'decisionNotes', 'createdAt', 'createdBy', 'submittedAt', 'decidedAt', 'updatedAt', 'updatedBy'],
   RequestItems: ['requestItemId', 'requestId', 'itemId', 'requestedQty', 'approvedQty', 'fulfilledQty'],

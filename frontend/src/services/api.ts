@@ -65,16 +65,19 @@ export function newRequestId(): string {
 
 type TokenProvider = () => string | null
 type UnauthenticatedHandler = (err: ApiError) => void
+type SuccessHandler = (action: string) => void
 
 class ApiClient {
   private transport: Transport | null = null
   private tokenProvider: TokenProvider = () => null
   private onUnauthenticated: UnauthenticatedHandler | null = null
+  private onSuccess: SuccessHandler | null = null
 
-  configure(opts: { transport: Transport; tokenProvider: TokenProvider; onUnauthenticated?: UnauthenticatedHandler }) {
+  configure(opts: { transport: Transport; tokenProvider: TokenProvider; onUnauthenticated?: UnauthenticatedHandler; onSuccess?: SuccessHandler }) {
     this.transport = opts.transport
     this.tokenProvider = opts.tokenProvider
     this.onUnauthenticated = opts.onUnauthenticated || null
+    this.onSuccess = opts.onSuccess || null
   }
 
   /**
@@ -93,6 +96,7 @@ class ApiClient {
       if (err.code === 'UNAUTHENTICATED' && this.onUnauthenticated && action !== 'auth.login') this.onUnauthenticated(err)
       throw err
     }
+    if (this.onSuccess) { try { this.onSuccess(action) } catch { /* never let cache bookkeeping break a call */ } }
     return res.data
   }
 }

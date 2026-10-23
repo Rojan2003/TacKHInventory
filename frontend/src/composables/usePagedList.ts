@@ -1,44 +1,49 @@
-import { reactive, ref, shallowRef, watch, type Ref } from 'vue'
+import { computed, reactive, ref, watch, type Ref } from 'vue'
+import { keepPreviousData, useQuery } from '@tanstack/vue-query'
 import { api, describeError } from '@/services/api'
 import type { ListParams, Paged } from '@/types/api'
 
-/** Server-driven paged list with search, sort and arbitrary filters. */
+const CONTROL_KEYS = ['page', 'pageSize', 'sortBy', 'sortDir', 'query']
+
+/**
+ * Server-driven paged list with search, sort and arbitrary filters, backed by the query cache:
+ * a page you have seen before renders instantly and refreshes in the background; while the filters change the
+ * previous rows stay visible (dimmed by DataTable) until the new page arrives.
+ */
 export function usePagedList<T, P extends Paged<T> = Paged<T>>(action: string, initial: Partial<ListParams> = {}, options: { pageSize?: number; debounceMs?: number } = {}) {
   const params = reactive<ListParams>({ page: 1, pageSize: options.pageSize || 20, sortBy: '', sortDir: 'asc', query: '', ...initial })
-  const page = shallowRef<P | null>(null) as Ref<P | null>
-  const loading = ref(false)
-  const error = ref<string | null>(null)
-  let seq = 0
+  const debouncedQuery = ref(String(params.query || ''))
   let timer: ReturnType<typeof setTimeout> | null = null
 
-  async function load() {
-    const my = ++seq
-    loading.value = true
-    error.value = null
-    try {
-      const clean: Record<string, unknown> = {}
-      Object.entries(params).forEach(([k, v]) => { if (v !== '' && v !== undefined && v !== null) clean[k] = v })
-      const res = await api.call<P>(action, clean)
-      if (my === seq) page.value = res
-    } catch (err) {
-      if (my === seq) error.value = describeError(err)
-    } finally {
-      if (my === seq) loading.value = false
-    }
-  }
-
-  function scheduleLoad() {
+  watch(() => params.query, (q) => {
     if (timer) clearTimeout(timer)
-    timer = setTimeout(load, options.debounceMs ?? 250)
-  }
-
-  watch(() => params.query, () => { params.page = 1; scheduleLoad() })
-  watch(() => [params.page, params.pageSize, params.sortBy, params.sortDir], () => load())
+    timer = setTimeout(() => { params.page = 1; debouncedQuery.value = String(q || '') }, options.debounceMs ?? 250)
+  })
   watch(
-    () => Object.entries(params).filter(([k]) => !['page', 'pageSize', 'sortBy', 'sortDir', 'query'].includes(k)).map(([, v]) => v),
-    () => { params.page = 1; load() },
+    () => Object.entries(params).filter(([k]) => !CONTROL_KEYS.includes(k)).map(([, v]) => v),
+    () => { params.page = 1 },
     { deep: true },
   )
+
+  const clean = computed(() => {
+    const out: Record<string, unknown> = {}
+    Object.entries(params).forEach(([k, v]) => {
+      const val = k === 'query' ? debouncedQuery.value : v
+      if (val !== '' && val !== undefined && val !== null) out[k] = val
+    })
+    return out
+  })
+
+  const query = useQuery({
+    queryKey: computed(() => [action, clean.value] as const),
+    queryFn: () => api.call<P>(action, clean.value),
+    placeholderData: keepPreviousData,
+  })
+
+  const page = query.data as Ref<P | undefined>
+  const loading = computed(() => query.isFetching.value)
+  const error = computed(() => (query.error.value ? describeError(query.error.value) : null))
+  async function load() { await query.refetch() }
 
   function sort(key: string) {
     if (params.sortBy === key) params.sortDir = params.sortDir === 'asc' ? 'desc' : 'asc'
@@ -53,6 +58,5 @@ export function usePagedList<T, P extends Paged<T> = Paged<T>>(action: string, i
     params.page = 1
   }
 
-  void load()
   return { params, page, loading, error, load, reload: load, sort, resetFilters }
 }

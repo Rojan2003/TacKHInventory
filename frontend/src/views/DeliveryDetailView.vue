@@ -3,7 +3,8 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { CheckCircle2, Ban, Pencil, Printer } from 'lucide-vue-next'
 import { api } from '@/services/api'
-import { useAsync, useMutation } from '@/composables/useAsync'
+import { useMutation } from '@/composables/useAsync'
+import { useApiQuery } from '@/composables/useApiQuery'
 import { useConfirm } from '@/composables/useConfirm'
 import { useAuthStore } from '@/stores/auth'
 import { useReferenceStore } from '@/stores/reference'
@@ -20,7 +21,7 @@ const auth = useAuthStore()
 const reference = useReferenceStore()
 const { confirm } = useConfirm()
 const deliveryId = computed(() => String(route.params.deliveryId))
-const { data: d, loading, error, reload } = useAsync<Delivery>(() => api.call('deliveries.get', { deliveryId: deliveryId.value }))
+const { data: d, loading, error, reload, setData } = useApiQuery<Delivery>('deliveries.get', () => ({ deliveryId: deliveryId.value }))
 const canManage = computed(() => auth.can('deliveries.manage'))
 
 function print() { window.print() }
@@ -33,14 +34,14 @@ async function onConfirm() {
   const r = await confirm({ title: `Confirm delivery ${d.value.reference}?`, message: `This will add ${formatNumber(d.value.totalQty)} units across ${d.value.itemCount} item(s) to East's physical stock. This cannot be undone; later corrections require a stock adjustment.`, confirmText: 'Confirm receipt' })
   if (!r.confirmed) return
   const res = await confirmMutation.mutate()
-  if (res) { d.value = res; reference.invalidate(['items']) }
+  if (res) { setData(res); reference.invalidate(['items']) }
 }
 async function onCancel() {
   if (!d.value) return
   const r = await confirm({ title: `Cancel delivery ${d.value.reference}?`, message: 'The delivery will be marked cancelled and will never be added to stock.', confirmText: 'Cancel delivery', danger: true, inputLabel: 'Reason', requireInput: true })
   if (!r.confirmed) return
   const res = await cancelMutation.mutate(r.input)
-  if (res) d.value = res
+  if (res) setData(res)
 }
 </script>
 
@@ -64,6 +65,7 @@ async function onCancel() {
           { label: 'Delivery date', value: formatDate(d.deliveryDate) },
           { label: 'Source', value: `${d.sourceName} (${d.sourceType})` },
           { label: 'Received by', value: d.receivedBy },
+          { label: 'Packing list', value: d.packingListNumber || '—' },
           { label: 'Recorded', value: `${formatDateTime(d.createdAt)} by ${d.createdBy}` },
           { label: 'Confirmed', value: d.confirmedAt ? `${formatDateTime(d.confirmedAt)} by ${d.confirmedBy}` : (d.status === 'Pending' ? 'Not yet (stock unchanged)' : '—') },
           { label: 'Notes', value: d.notes },

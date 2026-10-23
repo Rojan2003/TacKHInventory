@@ -34,6 +34,7 @@ function setup() {
     settings.append(missing.map(function (s) { return { key: s.key, value: s.value, description: s.description, updatedAt: nowIso(), updatedBy: 'setup' }; }));
     invalidateSettingsCache();
   }
+  bumpDataVersion(); // schema or seed changes must not be served from cached rows
   var admin = seedInitialAdmin('setup');
   if (admin) console.log('Seeded initial administrator: ' + admin.email);
   var summary = {
@@ -69,6 +70,8 @@ function healthCheck() {
     sheets: ss.getSheets().map(function (s) { return s.getName() + ' (' + Math.max(0, s.getLastRow() - 1) + ' rows)'; }),
     googleClientIdConfigured: !!props.getProperty('GOOGLE_CLIENT_ID'),
     sessionSecretConfigured: !!props.getProperty('SESSION_SECRET'),
+    cacheEnabled: cacheEnabled(),
+    dataVersion: getDataVersion(),
     coordinator: (function () { try { return getCoordinatorCongregation().name; } catch (e) { return 'NOT CONFIGURED'; } })(),
     users: table(SHEETS.USERS).count()
   };

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Menu, LogOut, X, FlaskConical } from 'lucide-vue-next'
+import { Menu, LogOut, X, FlaskConical, RefreshCw } from 'lucide-vue-next'
+import { useIsFetching } from '@tanstack/vue-query'
 import SidebarNav from './SidebarNav.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useReferenceStore } from '@/stores/reference'
@@ -13,6 +14,7 @@ const reference = useReferenceStore()
 const route = useRoute()
 const router = useRouter()
 const drawer = ref(false)
+const fetching = useIsFetching()
 
 const appName = import.meta.env.VITE_APP_NAME || 'East Congregation Literature Inventory'
 const roleLabel = computed(() => (auth.user ? ROLE_LABELS[auth.user.role] : ''))
@@ -84,6 +86,7 @@ async function logout() {
           <p class="truncate text-sm font-semibold text-ink">{{ route.meta.title || appName }}</p>
           <p class="hidden sm:block truncate text-xs text-muted">{{ appName }}</p>
         </div>
+        <span v-if="fetching > 0" class="hidden sm:inline-flex items-center gap-1 text-xs text-muted" aria-live="polite" data-updating><RefreshCw class="size-3.5 animate-spin" /> Updating…</span>
         <span v-if="API_MODE === 'mock'" class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800" title="Running the backend in the browser with demo data">
           <FlaskConical class="size-3.5" /> Demo mode
         </span>

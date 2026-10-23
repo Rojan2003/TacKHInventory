@@ -48,6 +48,7 @@ owner, so end users never need direct access.
    | `GOOGLE_CLIENT_ID` | the client ID from step 1 |
    | `SPREADSHEET_ID` | (optional) overrides the default production ID; use a copy for testing |
    | `ENVIRONMENT` | `test` or `production` (informational) |
+   | `CACHE_ENABLED` | optional kill switch for the backend read cache; absent or `true` = on, `false` = off (see "Read cache" below) |
 4. In the editor select `setup` and Run. Grant the requested permissions (Sheets, external requests).
    `setup()` creates the new worksheets and columns, generates `SESSION_SECRET`, seeds the five
    congregations, default settings and the initial administrator. Run `healthCheck` to verify.
@@ -67,6 +68,17 @@ owner, so end users never need direct access.
 7. Every code change needs **Deploy → Manage deployments → Edit → New version** (or `clasp deploy -i <id>`)
    so the `/exec` URL stays stable.
 
+### Read cache and manual spreadsheet edits
+
+The backend keeps raw worksheet rows in Apps Script's CacheService for up to **120 seconds**. Every change made
+through the app invalidates the whole cache at once (a global data version is bumped even when a change fails
+halfway), reads performed while a change is in progress always go to the sheet, and per-account, audit and
+idempotency sheets are never cached. The consequence for hand edits: **if you change a cell directly in Google
+Sheets, the app shows it within two minutes**, or immediately after **User Management → Maintenance → Clear
+cache**. Set the `CACHE_ENABLED` Script Property to `false` to switch the cache off entirely (slower, but every
+read hits the sheet). The browser also keeps the pages you have visited for the session and refreshes them in the
+background; sign out or reload to drop them.
+
 ## 4. GitHub repository and Pages
 
 1. Settings → Secrets and variables → Actions → **Variables** (not secrets; they are public):
@@ -85,6 +97,14 @@ owner, so end users never need direct access.
    pointing to `rojan2003.github.io` (or `A`/`AAAA` records to GitHub's Pages IPs for an apex domain).
    Tick **Enforce HTTPS** once the certificate is issued. Add the domain to the OAuth client's JavaScript origins.
 5. Recommended: Settings → Branches → protect `main` (require the workflow to pass).
+
+### Receiving literature from the branch
+
+On **Incoming Deliveries → Paste packing list**, paste the text of one or more Watchtower packing lists. "Check" shows
+what will happen (existing items, items to be created, lines it cannot read, lists already entered); "Create" makes one
+pending delivery per packing list from Branch Office and creates the missing catalogue items (SKU = symbol, name =
+"Title (Language)", category from the title or symbol, minimum stock 0). Confirm each delivery to post the stock.
+A packing list number can only be entered once.
 
 ## 5. Authorizing users
 
